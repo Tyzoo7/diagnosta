@@ -1,0 +1,110 @@
+using System.Globalization;
+using Diagnosta.Cli;
+using Diagnosta.Ui;
+using Spectre.Console;
+
+namespace Diagnosta.Tests;
+
+public class AppTests
+{
+    private sealed class Captured
+    {
+        public StringWriter Out { get; } = new();
+
+        public StringWriter Error { get; } = new();
+
+        public App CreateApp() => new(Create(Out), Create(Error));
+
+        private static IAnsiConsole Create(TextWriter writer)
+        {
+            var console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                ColorSystem = ColorSystemSupport.NoColors,
+                Out = new AnsiConsoleOutput(writer),
+            });
+            console.Profile.Width = 120;
+            return console;
+        }
+    }
+
+    private static (int ExitCode, string Out, string Error) Run(string culture, params string[] args)
+    {
+        var previous = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            var captured = new Captured();
+            var exitCode = captured.CreateApp().Run(CliParser.Parse(args));
+            return (exitCode, captured.Out.ToString(), captured.Error.ToString());
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
+    [Fact]
+    public void Version_PrintsVersionNumber()
+    {
+        var (exitCode, output, _) = Run("en", "--version");
+
+        Assert.Equal(App.ExitSuccess, exitCode);
+        Assert.Equal($"Diagnosta {App.Version}", output.Trim());
+        Assert.Matches(@"^\d+\.\d+\.\d+", App.Version);
+    }
+
+    [Fact]
+    public void Help_ListsAllOptions()
+    {
+        var (exitCode, output, _) = Run("en", "--help");
+
+        Assert.Equal(App.ExitSuccess, exitCode);
+        Assert.Contains("--help", output, StringComparison.Ordinal);
+        Assert.Contains("--version", output, StringComparison.Ordinal);
+        Assert.Contains("--lang", output, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("en", "Usage")]
+    [InlineData("de", "Verwendung")]
+    public void Help_IsShownInTheChosenLanguage(string culture, string expectedWord)
+    {
+        var (_, output, _) = Run(culture, "--help");
+
+        Assert.Contains(expectedWord, output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Welcome_ShowsVersionAndLanguage()
+    {
+        var (exitCode, output, _) = Run("de");
+
+        Assert.Equal(App.ExitSuccess, exitCode);
+        Assert.Contains(App.Version, output, StringComparison.Ordinal);
+        Assert.Contains("Deutsch", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InvalidArgument_GoesToErrorOutput_WithUsageExitCode()
+    {
+        var (exitCode, output, error) = Run("en", "--bogus");
+
+        Assert.Equal(App.ExitUsageError, exitCode);
+        Assert.Empty(output);
+        Assert.Contains("--bogus", error, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("[red]")]
+    [InlineData("[/]")]
+    [InlineData("[[")]
+    public void UserInput_IsNotInterpretedAsMarkup(string malicious)
+    {
+        // Unescaped, "[/]" would make Spectre.Console throw and "[red]" would change colors.
+        var (exitCode, _, error) = Run("en", malicious);
+
+        Assert.Equal(App.ExitUsageError, exitCode);
+        Assert.Contains(malicious, error, StringComparison.Ordinal);
+    }
+}

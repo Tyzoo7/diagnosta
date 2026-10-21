@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTagline" xml:space="preserve">
+    <value>PC-Checker – verstehe deinen PC auf einen Blick</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="LanguageName" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="VersionLabel" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="WelcomeComingSoon" xml:space="preserve">
+    <value>Noch keine Prüfungen verfügbar – die ersten kommen in der nächsten Version.</value>
+  </data>
+  <data name="HintHelp" xml:space="preserve">
+    <value>Starte mit --help, um alle Optionen zu sehen.</value>
+  </data>
+  <data name="HelpUsage" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="HelpOptions" xml:space="preserve">
+    <value>Optionen</value>
+  </data>
+  <data name="HelpOptionsPlaceholder" xml:space="preserve">
+    <value>optionen</value>
+  </data>
+  <data name="HelpOptionHelp" xml:space="preserve">
+    <value>Diese Hilfe anzeigen</value>
+  </data>
+  <data name="HelpOptionVersion" xml:space="preserve">
+    <value>Version anzeigen</value>
+  </data>
+  <data name="HelpOptionLanguage" xml:space="preserve">
+    <value>Sprache festlegen (de, en). Standard: deine Windows-Sprache</value>
+  </data>
+  <data name="ErrorUnknownArgument" xml:space="preserve">
+    <value>Unbekannte Option: {0}</value>
+  </data>
+  <data name="ErrorMissingLanguageValue" xml:space="preserve">
+    <value>{0} braucht einen Wert (de oder en).</value>
+  </data>
+  <data name="ErrorUnsupportedLanguage" xml:space="preserve">
+    <value>Nicht unterstützte Sprache: {0}. Verfügbar: de, en</value>
+  </data>
+</root>
