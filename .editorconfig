@@ -19,6 +19,10 @@ csharp_style_namespace_declarations = file_scoped:warning
 csharp_prefer_braces = true:warning
 dotnet_sort_system_directives_first = true
 
+# Format templates come from translations and change with the UI language,
+# so caching them as CompositeFormat (CA1863) does not fit. The speed gain would be negligible.
+dotnet_diagnostic.CA1863.severity = none
+
 # Test names like Method_Situation_Expectation read as sentences.
 [tests/**.cs]
 dotnet_diagnostic.CA1707.severity = none

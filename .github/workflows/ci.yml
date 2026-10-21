@@ -51,5 +51,7 @@ jobs:
           $exe = "src/Diagnosta/bin/Release/net10.0/Diagnosta.exe"
           & $exe --version
           if ($LASTEXITCODE -ne 0) { throw "--version failed" }
+          & $exe --lang en
+          if ($LASTEXITCODE -ne 0) { throw "system overview (English) failed" }
           & $exe --lang de
-          if ($LASTEXITCODE -ne 0) { throw "welcome screen failed" }
+          if ($LASTEXITCODE -ne 0) { throw "system overview (German) failed" }

@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Reflection;
+using Diagnosta.Checks;
 using Diagnosta.Cli;
 using Diagnosta.Localization;
+using Diagnosta.SystemInfo;
 using Spectre.Console;
 
 namespace Diagnosta.Ui;
@@ -10,11 +12,13 @@ namespace Diagnosta.Ui;
 /// Turns a parsed command line into console output. Takes <see cref="IAnsiConsole"/>s
 /// instead of writing to the real console so tests can capture what is shown.
 /// Errors go to a separate console (stderr) so scripts can tell them apart from output.
+/// <paramref name="systemInfo"/> is null on platforms Diagnosta does not support.
 /// </summary>
-internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole)
+internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISystemInfoSource? systemInfo)
 {
     public const int ExitSuccess = 0;
     public const int ExitUsageError = 2;
+    public const int ExitUnsupportedPlatform = 3;
 
     public static string Version { get; } = ReadVersion();
 
@@ -37,27 +41,33 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole)
                 console.WriteLine($"Diagnosta {Version}");
                 break;
             default:
-                ShowWelcome();
-                break;
+                return ShowOverview();
         }
 
         return ExitSuccess;
     }
 
-    private void ShowWelcome()
+    private int ShowOverview()
     {
+        if (systemInfo is null)
+        {
+            errorConsole.MarkupLine($"[red]{Markup.Escape(Strings.WindowsOnly)}[/]");
+            return ExitUnsupportedPlatform;
+        }
+
         console.Write(new FigletText("Diagnosta").Color(Color.DeepSkyBlue1));
         console.MarkupLine($"[grey]{Markup.Escape(Strings.AppTagline)}[/]");
+        console.MarkupLine(
+            $"[grey]{Markup.Escape(Strings.VersionLabel)} {Markup.Escape(Version)} · " +
+            $"{Markup.Escape(Strings.LanguageLabel)}: {Markup.Escape(Strings.LanguageName)}[/]");
         console.WriteLine();
 
-        var info = new Grid().AddColumn().AddColumn();
-        info.AddRow($"[bold]{Markup.Escape(Strings.VersionLabel)}[/]", Markup.Escape(Version));
-        info.AddRow($"[bold]{Markup.Escape(Strings.LanguageLabel)}[/]", Markup.Escape(Strings.LanguageName));
-        console.Write(new Panel(info).RoundedBorder().BorderColor(Color.Grey));
+        var overview = systemInfo.Read();
+        SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview));
 
         console.WriteLine();
-        console.MarkupLine($"[yellow]{Markup.Escape(Strings.WelcomeComingSoon)}[/]");
         console.MarkupLine($"[grey]{Markup.Escape(Strings.HintHelp)}[/]");
+        return ExitSuccess;
     }
 
     private void ShowHelp()
