@@ -186,6 +186,75 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Drives</value>
   </data>
+  <data name="SectionBattery" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="SectionNetwork" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="BatteryNone" xml:space="preserve">
+    <value>No battery: this is a desktop PC.</value>
+  </data>
+  <data name="BatteryCharge" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="BatteryPluggedIn" xml:space="preserve">
+    <value>plugged in</value>
+  </data>
+  <data name="BatteryOnBattery" xml:space="preserve">
+    <value>on battery</value>
+  </data>
+  <data name="BatteryHealth" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="BatteryHealthValue" xml:space="preserve">
+    <value>{0} of its original capacity</value>
+  </data>
+  <data name="BatteryCapacity" xml:space="preserve">
+    <value>{0} of originally {1}</value>
+  </data>
+  <data name="BatteryCycles" xml:space="preserve">
+    <value>{0} charge cycles</value>
+  </data>
+  <data name="NetworkNone" xml:space="preserve">
+    <value>No active network connection.</value>
+  </data>
+  <data name="NetworkWiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+  </data>
+  <data name="NetworkEthernet" xml:space="preserve">
+    <value>Ethernet</value>
+  </data>
+  <data name="NetworkOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="NetworkConnected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="NetworkIp" xml:space="preserve">
+    <value>IP {0}</value>
+  </data>
+  <data name="NetworkRouter" xml:space="preserve">
+    <value>Router {0}</value>
+  </data>
+  <data name="NetworkDns" xml:space="preserve">
+    <value>DNS {0}</value>
+  </data>
+  <data name="FindingBatteryWorn" xml:space="preserve">
+    <value>The battery holds {0} of its original capacity. That is normal wear; it simply lasts a bit shorter than when new.</value>
+  </data>
+  <data name="FindingBatteryReplace" xml:space="preserve">
+    <value>The battery holds only {0} of its original capacity. A replacement is worth it.</value>
+  </data>
+  <data name="FindingNoNetwork" xml:space="preserve">
+    <value>No network connection is active. Check the Wi-Fi or cable.</value>
+  </data>
+  <data name="FindingNoDhcp" xml:space="preserve">
+    <value>{0} got no address from the router (169.254.x.x). Restarting the router or the PC usually fixes this.</value>
+  </data>
+  <data name="FindingSlowEthernet" xml:space="preserve">
+    <value>The network cable is only connected at {0}. A faulty cable or an old port is the usual cause.</value>
+  </data>
   <data name="SectionStartup" xml:space="preserve">
     <value>Startup apps</value>
   </data>

@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.6).** System overview, drive overview and drive health are in place.
+> **Status: early development (v0.6).** Menu, system details, drives, battery, network, startup apps and running programs are in place.
 > More checks are being added one by one.
 
 ## Why another diagnostics tool?
@@ -25,12 +25,16 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 
 ## Planned for v1.0
 
-- [x] System overview: CPU, RAM, GPU, Windows version, uptime, with plain-language hints
+- [x] Arrow-key menu with language choice (German/English)
+- [x] System overview: Windows version, uptime and pending restart; CPU load and base clock; RAM usage and modules; GPU memory and driver, with plain-language hints
 - [x] Drive overview: SSD/HDD, model, free space, warning when nearly full
 - [x] Drive health: healthy / warning / failing, as reported by Windows (no admin rights needed)
 - [ ] Storage analysis: largest folders and files
 - [ ] Cleanup suggestions: temp files, update cache, recycle bin
-- [ ] Startup programs
+- [x] Battery wear on laptops
+- [x] Network adapters: link speed, IP address, router, DNS (no internet access, no location prompt)
+- [x] Startup programs, as listed in Task Manager
+- [x] Running programs using the most memory and CPU
 - [ ] Crash history: blue screens and unexpected shutdowns
 - [ ] Report export (HTML), anonymised by default
 

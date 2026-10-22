@@ -48,6 +48,17 @@ internal static class SystemOverviewView
             console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives, overview.PhysicalDisks), width));
         }
 
+        // In the full check a desktop PC simply has no battery panel; asked directly, it says so.
+        if (areas.Contains(CheckArea.Battery) && (areas.Count == 1 || overview.Battery is not { Present: false }))
+        {
+            console.Write(Section(Strings.SectionBattery, BatteryGrid(overview.Battery), width));
+        }
+
+        if (areas.Contains(CheckArea.Network))
+        {
+            console.Write(Section(Strings.SectionNetwork, NetworkGrid(overview.Network), width));
+        }
+
         if (areas.Contains(CheckArea.Startup))
         {
             console.Write(Section(Strings.SectionStartup, StartupGrid(overview.StartupApps), width));
@@ -62,6 +73,98 @@ internal static class SystemOverviewView
         {
             console.Write(Section(Strings.FindingsTitle, FindingsGrid(relevant), width));
         }
+    }
+
+    private static IRenderable BatteryGrid(BatteryInfo? battery)
+    {
+        if (battery is null)
+        {
+            return Text(Strings.Unknown);
+        }
+
+        if (!battery.Present)
+        {
+            return Text(Strings.BatteryNone);
+        }
+
+        var grid = NewTwoColumnGrid();
+        var charge = battery.ChargePercent is { } percent ? Formatting.Percent(percent / 100.0) : Strings.Unknown;
+        var power = battery.PluggedIn switch
+        {
+            true => Strings.BatteryPluggedIn,
+            false => Strings.BatteryOnBattery,
+            null => null,
+        };
+        grid.AddRow(Label(Strings.BatteryCharge), Text(JoinDots(charge, power)));
+
+        grid.AddEmptyRow();
+        if (battery.Health is { } health)
+        {
+            var color = health < SystemOverviewAnalyzer.BatteryReplaceHealth ? Color.Red
+                : health < SystemOverviewAnalyzer.BatteryWornHealth ? Color.Yellow
+                : Color.Green;
+            var capacity = string.Format(CultureInfo.CurrentCulture, Strings.BatteryCapacity,
+                Formatting.WattHours(battery.FullChargeCapacity!.Value), Formatting.WattHours(battery.DesignedCapacity!.Value));
+            var cycles = battery.CycleCount is { } count ? string.Format(CultureInfo.CurrentCulture, Strings.BatteryCycles, count) : null;
+
+            grid.AddRow(
+                Label(Strings.BatteryHealth),
+                new Rows(
+                    Text(string.Format(CultureInfo.CurrentCulture, Strings.BatteryHealthValue, Formatting.Percent(health))),
+                    UsageBar(health, color),
+                    QuietText(JoinDots(capacity, cycles, battery.Chemistry))!));
+        }
+        else
+        {
+            grid.AddRow(Label(Strings.BatteryHealth), Text(Strings.Unknown));
+        }
+
+        return grid;
+    }
+
+    private static IRenderable NetworkGrid(IReadOnlyList<NetworkAdapterInfo>? adapters)
+    {
+        if (adapters is null)
+        {
+            return Text(Strings.Unknown);
+        }
+
+        if (adapters.Count == 0)
+        {
+            return Text(Strings.NetworkNone);
+        }
+
+        var grid = NewTwoColumnGrid();
+        for (var i = 0; i < adapters.Count; i++)
+        {
+            if (i > 0)
+            {
+                grid.AddEmptyRow();
+            }
+
+            var adapter = adapters[i];
+            var kind = adapter.Kind switch
+            {
+                NetworkKind.WiFi => Strings.NetworkWiFi,
+                NetworkKind.Ethernet => Strings.NetworkEthernet,
+                _ => Strings.NetworkOther,
+            };
+            var status = JoinDots(Strings.NetworkConnected, adapter.SpeedBitsPerSecond is { } speed ? Formatting.BitRate(speed) : null);
+            var addresses = JoinDots(
+                adapter.IPv4Addresses.Count > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkIp, string.Join(", ", adapter.IPv4Addresses)) : null,
+                adapter.Gateway is { } gateway ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkRouter, gateway) : null,
+                adapter.DnsServers.Count > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkDns, string.Join(", ", adapter.DnsServers)) : null);
+
+            var lines = new List<IRenderable> { Text(adapter.Description), QuietText(status)! };
+            if (QuietText(addresses) is { } addressLine)
+            {
+                lines.Add(addressLine);
+            }
+
+            grid.AddRow(Label(kind), new Rows(lines));
+        }
+
+        return grid;
     }
 
     /// <summary>How many start with Windows, then each one; disabled ones in quiet grey.</summary>

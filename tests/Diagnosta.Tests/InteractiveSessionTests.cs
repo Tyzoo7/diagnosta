@@ -47,7 +47,7 @@ public class InteractiveSessionTests
         var result = Run("en-US", [], "English", "Quit");
 
         Assert.Equal(
-            ["Full PC check", "Windows", "Processor", "Memory (RAM)", "Graphics", "Drives", "Startup apps", "Running programs", "About Diagnosta", "Change language", "Quit"],
+            ["Full PC check", "Windows", "Processor", "Memory (RAM)", "Graphics", "Drives", "Battery", "Network", "Startup apps", "Running programs", "About Diagnosta", "Change language", "Quit"],
             result.Prompt.Asked[1].Choices);
     }
 

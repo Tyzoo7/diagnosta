@@ -17,6 +17,8 @@ internal enum CheckArea
     Memory,
     Graphics,
     Drives,
+    Battery,
+    Network,
     Startup,
     Processes,
 }

@@ -20,6 +20,18 @@ public class FormattingTests
     }
 
     [Theory]
+    [InlineData(100_000_000L, "100 Mbit/s")]
+    [InlineData(866_700_000L, "867 Mbit/s")]
+    [InlineData(1_000_000_000L, "1 Gbit/s")]
+    [InlineData(2_500_000_000L, "2.5 Gbit/s")]
+    public void BitRate_UsesNetworkUnits(long bits, string expected)
+    {
+        using var _ = new CultureScope("en");
+
+        Assert.Equal(expected, Formatting.BitRate(bits));
+    }
+
+    [Theory]
     [InlineData("en", 1608, "1.6 GHz")]
     [InlineData("de", 1608, "1,6 GHz")]
     [InlineData("en", 4700, "4.7 GHz")]

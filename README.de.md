@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.6).** Systemüberblick, Laufwerksübersicht und Laufwerkszustand sind fertig.
+> **Status: frühe Entwicklung (v0.6).** Menü, Systemdetails, Laufwerke, Akku, Netzwerk, Autostart und laufende Programme sind fertig.
 > Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
@@ -26,12 +26,16 @@ Genau dafür ist Diagnosta gebaut:
 
 ## Geplant für v1.0
 
-- [x] Systemüberblick: CPU, RAM, Grafikkarte, Windows-Version, Laufzeit, mit verständlichen Hinweisen
+- [x] Menü mit Pfeiltasten und Sprachwahl (Deutsch/Englisch)
+- [x] Systemüberblick: Windows-Version, Laufzeit und ausstehender Neustart; CPU-Auslastung und Grundtakt; RAM-Belegung und -Module; Grafikspeicher und -treiber, mit verständlichen Hinweisen
 - [x] Laufwerksübersicht: SSD/HDD, Modell, freier Platz, Warnung wenn fast voll
 - [x] Laufwerkszustand: gesund / Warnung / defekt, wie von Windows gemeldet (ohne Admin-Rechte)
 - [ ] Speicheranalyse: größte Ordner und Dateien
 - [ ] Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
-- [ ] Autostart-Programme
+- [x] Akku-Verschleiß bei Laptops
+- [x] Netzwerkadapter: Geschwindigkeit, IP-Adresse, Router, DNS (ohne Internetzugriff, ohne Standortabfrage)
+- [x] Autostart-Programme wie im Task-Manager
+- [x] Laufende Programme mit dem meisten RAM- und CPU-Verbrauch
 - [ ] Absturz-Verlauf: Bluescreens und unerwartete Neustarts
 - [ ] Bericht-Export (HTML), standardmäßig anonymisiert
 
