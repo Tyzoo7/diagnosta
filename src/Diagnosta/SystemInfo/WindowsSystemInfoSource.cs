@@ -16,12 +16,18 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
     private const string SessionPowerKey = @"SYSTEM\CurrentControlSet\Control\Session Manager\Power";
     private const string PowerKey = @"SYSTEM\CurrentControlSet\Control\Power";
 
+    /// <summary>Long enough to smooth out spikes, short enough not to make the menu feel slow.</summary>
+    private static readonly TimeSpan CpuSample = TimeSpan.FromMilliseconds(500);
+
     public SystemOverview Read() => new(
         Cpu: new CpuInfo(
             Name: Try(() => (ReadValue(CpuKey, "ProcessorNameString") as string)?.Trim(), null),
             PhysicalCores: Try(Kernel32.CountPhysicalCores, null),
-            LogicalProcessors: Environment.ProcessorCount),
+            LogicalProcessors: Environment.ProcessorCount,
+            UsagePercent: Try(() => Kernel32.MeasureCpuUsage(CpuSample), null),
+            BaseMhz: Try(() => ReadValue(CpuKey, "~MHz") as int?, null)),
         Memory: Try(Kernel32.ReadMemory, null),
+        MemoryModules: Try(() => Kernel32.ReadSmbiosTable() is { } table ? SmbiosParser.ParseMemory(table) : null, null),
         Gpus: Try(Dxgi.ReadGpus, null),
         Drives: Try(ReadDrives, null),
         PhysicalDisks: Try(Wmi.ReadPhysicalDisks, null),

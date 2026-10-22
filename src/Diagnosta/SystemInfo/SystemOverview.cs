@@ -3,7 +3,18 @@ namespace Diagnosta.SystemInfo;
 // Every value is nullable: if Windows does not tell us something, we show "unknown"
 // instead of guessing or crashing.
 
-internal sealed record CpuInfo(string? Name, int? PhysicalCores, int LogicalProcessors);
+/// <param name="UsagePercent">Average load over a short sample, 0–100.</param>
+/// <param name="BaseMhz">Base clock. The turbo maximum is not reliably available from Windows.</param>
+internal sealed record CpuInfo(string? Name, int? PhysicalCores, int LogicalProcessors, double? UsagePercent = null, int? BaseMhz = null);
+
+/// <summary>One installed RAM module. Its serial number is deliberately never read.</summary>
+internal sealed record MemoryModuleInfo(ulong SizeBytes, string? Type, int? SpeedMts, string? Manufacturer, string? PartNumber);
+
+/// <summary>Installed modules and how many slots the mainboard has (soldered memory counts as a slot).</summary>
+internal sealed record MemoryLayout(IReadOnlyList<MemoryModuleInfo> Modules, int SlotCount)
+{
+    public int FreeSlots => Math.Max(0, SlotCount - Modules.Count);
+}
 
 internal sealed record MemoryInfo(ulong TotalBytes, ulong AvailableBytes)
 {
@@ -12,7 +23,13 @@ internal sealed record MemoryInfo(ulong TotalBytes, ulong AvailableBytes)
     public double UsedFraction => TotalBytes == 0 ? 0 : (double)UsedBytes / TotalBytes;
 }
 
-internal sealed record GpuInfo(string Name, ulong? DedicatedMemoryBytes)
+/// <param name="SharedMemoryBytes">How much normal RAM the GPU may borrow.</param>
+internal sealed record GpuInfo(
+    string Name,
+    ulong? DedicatedMemoryBytes,
+    ulong? SharedMemoryBytes = null,
+    string? DriverVersion = null,
+    DateOnly? DriverDate = null)
 {
     /// <summary>
     /// Built-in graphics only reserves a small slice of memory (typically 128–512 MB)
@@ -72,6 +89,7 @@ internal sealed record WindowsInfo(string Name, string? Edition, string? Display
 internal sealed record SystemOverview(
     CpuInfo Cpu,
     MemoryInfo? Memory,
+    MemoryLayout? MemoryModules,
     IReadOnlyList<GpuInfo>? Gpus,
     IReadOnlyList<VolumeInfo>? Drives,
     IReadOnlyList<PhysicalDiskInfo>? PhysicalDisks,

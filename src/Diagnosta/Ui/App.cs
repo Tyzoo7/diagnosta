@@ -103,7 +103,7 @@ internal sealed class App(
             Header = new PanelHeader($"[bold deepskyblue1] {Markup.Escape(Strings.MenuAbout)} [/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Grey),
-            Padding = new Padding(1, 1, 1, 0),
+            Padding = new Padding(1, 0, 1, 0),
             Width = Math.Min(console.Profile.Width, 96),
         });
     }

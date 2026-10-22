@@ -112,10 +112,43 @@
     <value>Version {0}</value>
   </data>
   <data name="CpuCoresThreads" xml:space="preserve">
-    <value>{0} cores, {1} threads</value>
+    <value>{0} cores · {1} threads</value>
   </data>
   <data name="CpuThreads" xml:space="preserve">
     <value>{0} threads</value>
+  </data>
+  <data name="CpuBaseClock" xml:space="preserve">
+    <value>base clock {0}</value>
+  </data>
+  <data name="CpuUsage" xml:space="preserve">
+    <value>{0} in use right now</value>
+  </data>
+  <data name="MemoryModulesOne" xml:space="preserve">
+    <value>1 module: {0}</value>
+  </data>
+  <data name="MemoryModulesMany" xml:space="preserve">
+    <value>{0} modules: {1}</value>
+  </data>
+  <data name="MemorySlots" xml:space="preserve">
+    <value>Slots: {0} of {1} in use</value>
+  </data>
+  <data name="GpuIntegratedUpTo" xml:space="preserve">
+    <value>Integrated graphics, shares system memory (up to {0})</value>
+  </data>
+  <data name="GpuDriver" xml:space="preserve">
+    <value>Driver {0} from {1}</value>
+  </data>
+  <data name="GpuDriverVersionOnly" xml:space="preserve">
+    <value>Driver {0}</value>
+  </data>
+  <data name="FindingCpuBusy" xml:space="preserve">
+    <value>The processor is {0} busy right now. Task Manager shows which program is using it.</value>
+  </data>
+  <data name="FindingMemoryUpgrade" xml:space="preserve">
+    <value>At least one memory slot is free, so more RAM could be added cheaply.</value>
+  </data>
+  <data name="FindingGpuDriverOld" xml:space="preserve">
+    <value>The graphics driver for {0} is from {1}. A current driver from the manufacturer can fix errors and performance problems.</value>
   </data>
   <data name="MemoryUsage" xml:space="preserve">
     <value>{0} of {1} in use ({2})</value>

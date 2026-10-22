@@ -19,15 +19,24 @@ internal static class SystemOverviewAnalyzer
 
     public const double MemoryNearlyFullFraction = 0.9;
 
+    public const double CpuBusyPercent = 90;
+
+    /// <summary>Below this, adding a module is a cheap and noticeable upgrade.</summary>
+    public const ulong UpgradeWorthwhileBelowBytes = 16UL * 1024 * 1024 * 1024;
+
+    /// <summary>Graphics drivers this old often miss fixes for current games and Windows.</summary>
+    public const int OldDriverYears = 2;
+
     public const double DriveNearlyFullFraction = 0.9;
 
     /// <summary>Below this, Windows updates and temp files start to run out of room.</summary>
     public const ulong SystemDriveMinFreeBytes = 10UL * 1024 * 1024 * 1024;
 
     /// <summary>Returns only things worth mentioning, warnings first. Empty means "all good".</summary>
-    public static IReadOnlyList<Finding> Analyze(SystemOverview overview)
+    public static IReadOnlyList<Finding> Analyze(SystemOverview overview, DateOnly? today = null)
     {
         ArgumentNullException.ThrowIfNull(overview);
+        var now = today ?? DateOnly.FromDateTime(DateTime.Now);
 
         var findings = new List<Finding>();
 
@@ -44,6 +53,24 @@ internal static class SystemOverviewAnalyzer
             if (overview.FastStartupEnabled == true)
             {
                 findings.Add(new Finding(Severity.Info, CheckArea.Windows, Strings.FindingFastStartup));
+            }
+        }
+
+        if (overview.Cpu.UsagePercent is >= CpuBusyPercent and var usage)
+        {
+            findings.Add(new Finding(Severity.Warning, CheckArea.Processor, Format(Strings.FindingCpuBusy, Formatting.Percent(usage / 100))));
+        }
+
+        if (overview.Memory is { TotalBytes: > 0 and < UpgradeWorthwhileBelowBytes } && overview.MemoryModules is { FreeSlots: > 0 })
+        {
+            findings.Add(new Finding(Severity.Info, CheckArea.Memory, Strings.FindingMemoryUpgrade));
+        }
+
+        foreach (var gpu in overview.Gpus ?? [])
+        {
+            if (gpu.DriverDate is { } date && date.AddYears(OldDriverYears) < now)
+            {
+                findings.Add(new Finding(Severity.Info, CheckArea.Graphics, Format(Strings.FindingGpuDriverOld, gpu.Name, date.Year)));
             }
         }
 

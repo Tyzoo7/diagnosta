@@ -78,7 +78,7 @@ internal static class SystemOverviewView
             Header = new PanelHeader($"[bold deepskyblue1] {Markup.Escape(title)} [/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Grey),
-            Padding = new Padding(1, 1, 1, 0),
+            Padding = new Padding(1, 0, 1, 0),
             Width = width,
         };
 
@@ -113,13 +113,13 @@ internal static class SystemOverviewView
 
         if (areas.Contains(CheckArea.Processor))
         {
-            Item(Strings.LabelCpu, overview.Cpu.Name ?? Strings.Unknown, QuietText(CpuDetail(overview.Cpu)));
+            Item(Strings.LabelCpu, overview.Cpu.Name ?? Strings.Unknown, CpuDetails(overview.Cpu));
         }
 
         if (areas.Contains(CheckArea.Memory))
         {
-            var (main, bar) = MemoryLines(overview.Memory);
-            Item(Strings.LabelMemory, main, bar);
+            var (main, details) = MemoryLines(overview.Memory, overview.MemoryModules);
+            Item(Strings.LabelMemory, main, details);
         }
 
         if (areas.Contains(CheckArea.Graphics))
@@ -248,12 +248,30 @@ internal static class SystemOverviewView
         return (name, string.Join(" · ", parts.Where(p => p is not null)));
     }
 
-    private static string CpuDetail(CpuInfo cpu) =>
-        cpu.PhysicalCores is { } cores
+    /// <summary>"4 cores · 8 threads · base clock 1.60 GHz", then the current load with a bar.</summary>
+    private static Rows CpuDetails(CpuInfo cpu)
+    {
+        var counts = cpu.PhysicalCores is { } cores
             ? string.Format(CultureInfo.CurrentCulture, Strings.CpuCoresThreads, cores, cpu.LogicalProcessors)
             : string.Format(CultureInfo.CurrentCulture, Strings.CpuThreads, cpu.LogicalProcessors);
+        var clock = cpu.BaseMhz is { } mhz and > 0
+            ? string.Format(CultureInfo.CurrentCulture, Strings.CpuBaseClock, Formatting.Gigahertz(mhz))
+            : null;
 
-    private static (string Main, IRenderable? Bar) MemoryLines(MemoryInfo? memory)
+        var lines = new List<IRenderable> { QuietText(JoinDots(counts, clock))! };
+        if (cpu.UsagePercent is { } usage)
+        {
+            var fraction = usage / 100;
+            var color = usage >= SystemOverviewAnalyzer.CpuBusyPercent ? Color.Yellow : Color.Green;
+            lines.Add(new Columns(
+                UsageBar(fraction, color),
+                QuietText(string.Format(CultureInfo.CurrentCulture, Strings.CpuUsage, Formatting.Percent(fraction)))!).Collapse());
+        }
+
+        return new Rows(lines);
+    }
+
+    private static (string Main, IRenderable? Details) MemoryLines(MemoryInfo? memory, MemoryLayout? layout)
     {
         if (memory is null || memory.TotalBytes == 0)
         {
@@ -268,8 +286,34 @@ internal static class SystemOverviewView
             Formatting.Percent(memory.UsedFraction));
 
         var color = memory.UsedFraction >= SystemOverviewAnalyzer.MemoryNearlyFullFraction ? Color.Yellow : Color.Green;
-        return (text, UsageBar(memory.UsedFraction, color));
+        var lines = new List<IRenderable> { UsageBar(memory.UsedFraction, color) };
+
+        if (layout is { Modules.Count: > 0 })
+        {
+            lines.Add(QuietText(ModulesText(layout.Modules))!);
+            lines.Add(QuietText(string.Format(CultureInfo.CurrentCulture, Strings.MemorySlots, layout.Modules.Count, layout.SlotCount))!);
+        }
+
+        return (text, new Rows(lines));
     }
+
+    /// <summary>"2 modules: 8 GB + 16 GB · DDR4 · 2667 MT/s".</summary>
+    private static string ModulesText(IReadOnlyList<MemoryModuleInfo> modules)
+    {
+        var sizes = string.Join(" + ", modules.Select(m => Formatting.Bytes(m.SizeBytes)));
+        var count = modules.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Strings.MemoryModulesOne, sizes)
+            : string.Format(CultureInfo.CurrentCulture, Strings.MemoryModulesMany, modules.Count, sizes);
+        var types = string.Join("/", modules.Select(m => m.Type).OfType<string>().Distinct());
+        // All modules run at the speed of the slowest one.
+        var speed = modules.Select(m => m.SpeedMts).OfType<int>().DefaultIfEmpty().Min() is var s and > 0
+            ? string.Create(CultureInfo.CurrentCulture, $"{s} MT/s")
+            : null;
+        return JoinDots(count, types.Length == 0 ? null : types, speed);
+    }
+
+    private static string JoinDots(params string?[] parts) =>
+        string.Join(" · ", parts.Where(p => !string.IsNullOrEmpty(p)));
 
     /// <summary>One main line per GPU with a quiet detail line below it.</summary>
     private static IRenderable GpuLines(IReadOnlyList<GpuInfo>? gpus)
@@ -282,11 +326,22 @@ internal static class SystemOverviewView
         var lines = new List<IRenderable>();
         foreach (var gpu in gpus)
         {
-            var detail = gpu.IsIntegrated
-                ? Strings.GpuIntegrated
-                : string.Format(CultureInfo.CurrentCulture, Strings.GpuMemory, Formatting.Bytes(gpu.DedicatedMemoryBytes!.Value));
+            var detail = gpu switch
+            {
+                { IsIntegrated: true, SharedMemoryBytes: { } shared } =>
+                    string.Format(CultureInfo.CurrentCulture, Strings.GpuIntegratedUpTo, Formatting.Bytes(shared)),
+                { IsIntegrated: true } => Strings.GpuIntegrated,
+                _ => string.Format(CultureInfo.CurrentCulture, Strings.GpuMemory, Formatting.Bytes(gpu.DedicatedMemoryBytes!.Value)),
+            };
             lines.Add(Text(gpu.Name));
             lines.Add(QuietText(detail)!);
+
+            if (gpu.DriverVersion is { } version)
+            {
+                lines.Add(QuietText(gpu.DriverDate is { } date
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.GpuDriver, version, date.ToString("d", CultureInfo.CurrentCulture))
+                    : string.Format(CultureInfo.CurrentCulture, Strings.GpuDriverVersionOnly, version))!);
+            }
         }
 
         return new Rows(lines);

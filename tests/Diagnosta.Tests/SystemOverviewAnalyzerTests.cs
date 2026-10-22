@@ -7,10 +7,12 @@ public class SystemOverviewAnalyzerTests
 {
     private const ulong GB = FakeSystemInfoSource.GB;
 
+    private static readonly DateOnly Today = new(2026, 10, 22);
+
     private static IReadOnlyList<Finding> Analyze(SystemOverview overview)
     {
         using var _ = new CultureScope("en");
-        return SystemOverviewAnalyzer.Analyze(overview);
+        return SystemOverviewAnalyzer.Analyze(overview, Today);
     }
 
     [Fact]
@@ -85,7 +87,8 @@ public class SystemOverviewAnalyzerTests
     public void LowTotalMemory_IsPointedOut(double totalGb, bool expectInfo)
     {
         var total = (ulong)(totalGb * GB);
-        var pc = FakeSystemInfoSource.HealthyPc with { Memory = new MemoryInfo(total, total / 2) };
+        // No module data: this test is about total memory only, not about the upgrade tip.
+        var pc = FakeSystemInfoSource.HealthyPc with { Memory = new MemoryInfo(total, total / 2), MemoryModules = null };
 
         var info = Analyze(pc).Any(f => f.Severity == Severity.Info);
 
@@ -116,6 +119,7 @@ public class SystemOverviewAnalyzerTests
             Uptime = TimeSpan.FromDays(30),
             FastStartupEnabled = true,
             Memory = new MemoryInfo(4 * GB, GB / 10),
+            MemoryModules = null,
         };
 
         var findings = Analyze(pc);
@@ -205,6 +209,54 @@ public class SystemOverviewAnalyzerTests
 
         Assert.Equal(Severity.Critical, findings[0].Severity);
         Assert.Contains("Unnamed disk", findings[0].Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(89.9, false)]
+    [InlineData(90, true)]
+    public void BusyProcessor_IsWarnedAbout(double usage, bool expectWarning)
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { Cpu = FakeSystemInfoSource.HealthyPc.Cpu with { UsagePercent = usage } };
+
+        var finding = Analyze(pc).SingleOrDefault();
+
+        Assert.Equal(expectWarning, finding is { Severity: Severity.Warning, Area: CheckArea.Processor });
+    }
+
+    [Theory]
+    [InlineData(8, 2, 1, true)]    // 8 GB, one of two slots free
+    [InlineData(8, 2, 2, false)]   // all slots full
+    [InlineData(32, 4, 2, false)]  // plenty of RAM already
+    public void RamUpgrade_IsSuggestedOnlyWhenUsefulAndPossible(int totalGb, int slots, int modules, bool expectTip)
+    {
+        var total = (ulong)totalGb * GB;
+        var pc = FakeSystemInfoSource.HealthyPc with
+        {
+            Memory = new MemoryInfo(total, total / 2),
+            MemoryModules = new MemoryLayout([.. Enumerable.Repeat(new MemoryModuleInfo(total / (ulong)modules, "DDR4", 3200, null, null), modules)], slots),
+        };
+
+        var tip = Analyze(pc).Any(f => f.Area == CheckArea.Memory && f.Message.Contains("slot", StringComparison.Ordinal));
+
+        Assert.Equal(expectTip, tip);
+    }
+
+    [Theory]
+    [InlineData(2024, 10, 23, false)] // just under two years old
+    [InlineData(2024, 10, 21, true)]  // just over
+    public void OldGraphicsDriver_IsPointedOut(int year, int month, int day, bool expectTip)
+    {
+        var gpu = new GpuInfo("Intel(R) UHD Graphics", 128 * 1024 * 1024, null, "27.20.100.8681", new DateOnly(year, month, day));
+        var pc = FakeSystemInfoSource.HealthyPc with { Gpus = [gpu] };
+
+        var tip = Analyze(pc).SingleOrDefault(f => f.Area == CheckArea.Graphics);
+
+        Assert.Equal(expectTip, tip is not null);
+        if (tip is not null)
+        {
+            Assert.Contains("Intel(R) UHD Graphics", tip.Message, StringComparison.Ordinal);
+            Assert.Contains(year.ToString(System.Globalization.CultureInfo.InvariantCulture), tip.Message, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
