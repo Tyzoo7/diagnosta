@@ -49,6 +49,16 @@ public class AppTests
         Assert.Matches(@"^\d+\.\d+\.\d+", App.Version);
     }
 
+    [Theory]
+    [InlineData("0.5.0+18529c1f00d1e2a3b4c5d6e7f8091a2b3c4d5e6f", "0.5.0 (18529c1)")]
+    [InlineData("0.5.0+abc", "0.5.0 (abc)")]
+    [InlineData("0.5.0+", "0.5.0")]
+    [InlineData("0.5.0", "0.5.0")]
+    public void FormatVersion_ShowsShortCommit(string informational, string expected)
+    {
+        Assert.Equal(expected, App.FormatVersion(informational));
+    }
+
     [Fact]
     public void Help_ListsAllOptions()
     {
