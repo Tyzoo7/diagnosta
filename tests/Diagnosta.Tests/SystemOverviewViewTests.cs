@@ -25,10 +25,14 @@ public class SystemOverviewViewTests
         Assert.Contains("Windows 11 Pro", output, StringComparison.Ordinal);
         Assert.Contains("Version 24H2 · Build 26100.2314", output, StringComparison.Ordinal);
         Assert.Contains("AMD Ryzen 5 7600X 6-Core Processor", output, StringComparison.Ordinal);
-        Assert.Contains("6 cores, 12 threads", output, StringComparison.Ordinal);
+        Assert.Contains("6 cores · 12 threads · base clock 4.7 GHz", output, StringComparison.Ordinal);
+        Assert.Contains("12 % in use right now", output, StringComparison.Ordinal);
         Assert.Contains("12 GB of 32 GB in use (38 %)", output, StringComparison.Ordinal);
         Assert.Contains("NVIDIA GeForce RTX 4070", output, StringComparison.Ordinal);
         Assert.Contains("Dedicated graphics card with 12 GB of its own memory", output, StringComparison.Ordinal);
+        Assert.Contains("Driver 32.0.15.6094 from 8/20/2026", output, StringComparison.Ordinal);
+        Assert.Contains("2 modules: 16 GB + 16 GB · DDR5 · 6000 MT/s", output, StringComparison.Ordinal);
+        Assert.Contains("Slots: 2 of 4 in use", output, StringComparison.Ordinal);
         Assert.Contains("5 h 30 min", output, StringComparison.Ordinal);
         Assert.Contains("All good", output, StringComparison.Ordinal);
         Assert.DoesNotContain("Findings", output, StringComparison.Ordinal);
@@ -178,6 +182,7 @@ public class SystemOverviewViewTests
         var output = Render(pc);
 
         Assert.Contains("Integrated graphics, shares system memory", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("Driver", output.Split("RTX 3050")[0].Split("UHD Graphics")[1], StringComparison.Ordinal);
         Assert.Contains("RTX 3050 Laptop GPU", output, StringComparison.Ordinal);
         Assert.Contains("Dedicated graphics card with 4 GB of its own memory", output, StringComparison.Ordinal);
     }

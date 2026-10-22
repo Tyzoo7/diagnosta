@@ -112,10 +112,43 @@
     <value>Version {0}</value>
   </data>
   <data name="CpuCoresThreads" xml:space="preserve">
-    <value>{0} Kerne, {1} Threads</value>
+    <value>{0} Kerne · {1} Threads</value>
   </data>
   <data name="CpuThreads" xml:space="preserve">
     <value>{0} Threads</value>
+  </data>
+  <data name="CpuBaseClock" xml:space="preserve">
+    <value>Grundtakt {0}</value>
+  </data>
+  <data name="CpuUsage" xml:space="preserve">
+    <value>gerade zu {0} ausgelastet</value>
+  </data>
+  <data name="MemoryModulesOne" xml:space="preserve">
+    <value>1 Modul: {0}</value>
+  </data>
+  <data name="MemoryModulesMany" xml:space="preserve">
+    <value>{0} Module: {1}</value>
+  </data>
+  <data name="MemorySlots" xml:space="preserve">
+    <value>Steckplätze: {0} von {1} belegt</value>
+  </data>
+  <data name="GpuIntegratedUpTo" xml:space="preserve">
+    <value>Integrierte Grafik, nutzt den Arbeitsspeicher mit (bis zu {0})</value>
+  </data>
+  <data name="GpuDriver" xml:space="preserve">
+    <value>Treiber {0} vom {1}</value>
+  </data>
+  <data name="GpuDriverVersionOnly" xml:space="preserve">
+    <value>Treiber {0}</value>
+  </data>
+  <data name="FindingCpuBusy" xml:space="preserve">
+    <value>Der Prozessor ist gerade zu {0} ausgelastet. Im Task-Manager siehst du, welches Programm ihn belegt.</value>
+  </data>
+  <data name="FindingMemoryUpgrade" xml:space="preserve">
+    <value>Mindestens ein RAM-Steckplatz ist frei: Der Arbeitsspeicher ließe sich günstig aufrüsten.</value>
+  </data>
+  <data name="FindingGpuDriverOld" xml:space="preserve">
+    <value>Der Grafiktreiber für {0} ist von {1}. Ein aktueller Treiber vom Hersteller kann Fehler und Leistungsprobleme beheben.</value>
   </data>
   <data name="MemoryUsage" xml:space="preserve">
     <value>{0} von {1} belegt ({2})</value>

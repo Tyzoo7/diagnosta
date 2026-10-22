@@ -8,9 +8,15 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
     public const ulong GB = 1024UL * 1024 * 1024;
 
     public static SystemOverview HealthyPc { get; } = new(
-        Cpu: new CpuInfo("AMD Ryzen 5 7600X 6-Core Processor", PhysicalCores: 6, LogicalProcessors: 12),
+        Cpu: new CpuInfo("AMD Ryzen 5 7600X 6-Core Processor", PhysicalCores: 6, LogicalProcessors: 12, UsagePercent: 12, BaseMhz: 4700),
         Memory: new MemoryInfo(TotalBytes: 32 * GB, AvailableBytes: 20 * GB),
-        Gpus: [new GpuInfo("NVIDIA GeForce RTX 4070", 12 * GB)],
+        MemoryModules: new MemoryLayout(
+            [
+                new MemoryModuleInfo(16 * GB, "DDR5", 6000, "Kingston", "KF560C36-16"),
+                new MemoryModuleInfo(16 * GB, "DDR5", 6000, "Kingston", "KF560C36-16"),
+            ],
+            SlotCount: 4),
+        Gpus: [new GpuInfo("NVIDIA GeForce RTX 4070", 12 * GB, 16 * GB, "32.0.15.6094", new DateOnly(2026, 8, 20))],
         Drives:
         [
             new VolumeInfo("C:", null, 931 * GB, 412 * GB, IsSystemDrive: true, DriveKind.Ssd, "NVMe", "Samsung SSD 980 PRO 1TB", DiskNumber: 0),
@@ -29,6 +35,7 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
     public static SystemOverview SilentPc { get; } = new(
         Cpu: new CpuInfo(Name: null, PhysicalCores: null, LogicalProcessors: 4),
         Memory: null,
+        MemoryModules: null,
         Gpus: null,
         Drives: null,
         PhysicalDisks: null,

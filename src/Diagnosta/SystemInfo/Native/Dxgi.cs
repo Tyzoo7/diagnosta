@@ -89,7 +89,9 @@ internal static unsafe partial class Dxgi
 
         var name = new string(desc.Description).Trim();
         var memory = (ulong)desc.DedicatedVideoMemory;
-        return new GpuInfo(name, memory > 0 ? memory : null);
+        var shared = (ulong)desc.SharedSystemMemory;
+        var (driverVersion, driverDate) = GpuDrivers.Find(desc.VendorId, desc.DeviceId);
+        return new GpuInfo(name, memory > 0 ? memory : null, shared > 0 ? shared : null, driverVersion, driverDate);
     }
 
     private static IntPtr* VTable(IntPtr comObject) => *(IntPtr**)comObject;

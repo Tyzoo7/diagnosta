@@ -63,6 +63,54 @@ internal static partial class Kernel32
     }
 
     /// <summary>
+    /// Average CPU load over <paramref name="sample"/>. Windows counts how long all cores
+    /// together spent idle, in the kernel and in programs; the share that was not idle is
+    /// the load. (The kernel time includes the idle time.)
+    /// </summary>
+    public static double? MeasureCpuUsage(TimeSpan sample)
+    {
+        if (!GetSystemTimes(out var idle1, out var kernel1, out var user1))
+        {
+            return null;
+        }
+
+        Thread.Sleep(sample);
+
+        if (!GetSystemTimes(out var idle2, out var kernel2, out var user2))
+        {
+            return null;
+        }
+
+        var total = (kernel2 - kernel1) + (user2 - user1);
+        var idle = idle2 - idle1;
+        return total <= 0 ? null : Math.Clamp(100.0 * (total - idle) / total, 0, 100);
+    }
+
+    /// <summary>The raw SMBIOS table (hardware description from the firmware), without its header.</summary>
+    public static unsafe byte[]? ReadSmbiosTable()
+    {
+        const uint rsmb = 0x52534D42; // 'RSMB', the raw SMBIOS provider
+        const int headerSize = 8;      // RawSMBIOSData: 4 version bytes + length
+
+        var size = GetSystemFirmwareTable(rsmb, 0, null, 0);
+        if (size <= headerSize)
+        {
+            return null;
+        }
+
+        var buffer = new byte[size];
+        fixed (byte* p = buffer)
+        {
+            if (GetSystemFirmwareTable(rsmb, 0, p, size) != size)
+            {
+                return null;
+            }
+        }
+
+        return buffer[headerSize..];
+    }
+
+    /// <summary>
     /// True when no other program shares our console window. That happens when
     /// Diagnosta is double-clicked in Explorer: Windows opens a new window just for us
     /// and closes it the moment we exit.
@@ -97,4 +145,12 @@ internal static partial class Kernel32
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     private static unsafe partial uint GetConsoleProcessList(uint* processIds, uint count);
+
+    /// <summary>Times are FILETIMEs (100 ns units) summed over all processors.</summary>
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetSystemTimes(out long idleTime, out long kernelTime, out long userTime);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static unsafe partial uint GetSystemFirmwareTable(uint provider, uint tableId, byte* buffer, uint bufferSize);
 }

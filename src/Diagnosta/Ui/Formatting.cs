@@ -14,6 +14,13 @@ internal static class Formatting
             ? string.Format(CultureInfo.CurrentCulture, "{0:0.#} GB", bytes / Gigabyte)
             : string.Format(CultureInfo.CurrentCulture, "{0:0} MB", bytes / Megabyte);
 
+    /// <summary>
+    /// 1608 MHz → "1.6 GHz" (or "1,6 GHz" in German). Windows measures the clock at boot and
+    /// stores it slightly off, so one decimal is all that is honest.
+    /// </summary>
+    public static string Gigahertz(int megahertz) =>
+        string.Format(CultureInfo.CurrentCulture, "{0:0.0} GHz", megahertz / 1000.0);
+
     public static string Percent(double fraction) =>
         string.Format(CultureInfo.CurrentCulture, "{0:0} %", fraction * 100);
 

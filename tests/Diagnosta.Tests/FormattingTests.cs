@@ -20,6 +20,18 @@ public class FormattingTests
     }
 
     [Theory]
+    [InlineData("en", 1608, "1.6 GHz")]
+    [InlineData("de", 1608, "1,6 GHz")]
+    [InlineData("en", 4700, "4.7 GHz")]
+    [InlineData("en", 3792, "3.8 GHz")]
+    public void Gigahertz_UsesOneDecimal(string culture, int mhz, string expected)
+    {
+        using var _ = new CultureScope(culture);
+
+        Assert.Equal(expected, Formatting.Gigahertz(mhz));
+    }
+
+    [Theory]
     [InlineData("en", 0, 5, 30, "5 h 30 min")]
     [InlineData("de", 0, 5, 30, "5 Std. 30 Min.")]
     [InlineData("en", 1, 3, 0, "1 day, 3 h")]

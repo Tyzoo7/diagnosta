@@ -22,6 +22,9 @@ public class WindowsSystemInfoSourceTests
         var cpu = ReadRealMachine().Cpu;
 
         Assert.False(string.IsNullOrWhiteSpace(cpu.Name));
+        Assert.NotNull(cpu.UsagePercent);
+        Assert.InRange(cpu.UsagePercent.Value, 0, 100);
+        Assert.True(cpu.BaseMhz > 0, "base clock should be read from the registry");
         Assert.NotNull(cpu.PhysicalCores);
         Assert.InRange(cpu.PhysicalCores.Value, 1, cpu.LogicalProcessors);
     }
@@ -34,6 +37,19 @@ public class WindowsSystemInfoSourceTests
         Assert.NotNull(memory);
         Assert.InRange(memory.TotalBytes, 1UL * 1024 * 1024 * 1024, 64UL * 1024 * 1024 * 1024 * 1024);
         Assert.True(memory.AvailableBytes <= memory.TotalBytes);
+    }
+
+    [Fact]
+    public void MemoryModules_IfReported_AreConsistent()
+    {
+        // Some virtual machines report no SMBIOS memory devices; real PCs always do.
+        var layout = ReadRealMachine().MemoryModules;
+
+        if (layout is not null)
+        {
+            Assert.True(layout.SlotCount >= layout.Modules.Count);
+            Assert.All(layout.Modules, m => Assert.True(m.SizeBytes > 0));
+        }
     }
 
     [Fact]
