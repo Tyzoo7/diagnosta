@@ -53,7 +53,7 @@ public class SystemOverviewViewTests
         var output = Render(FakeSystemInfoSource.HealthyPc, "de");
 
         Assert.Contains("Zustand", output, StringComparison.Ordinal);
-        Assert.Contains("Samsung SSD 980 PRO 1TB  ✓ Gesund", output, StringComparison.Ordinal);
+        Assert.True(output.Contains("Samsung SSD 980 PRO 1TB  ✓ Gesund", StringComparison.Ordinal), output);
         Assert.Contains("WDC WD20EZRZ-00Z5HB0  ✓ Gesund", output, StringComparison.Ordinal);
     }
 
@@ -64,7 +64,7 @@ public class SystemOverviewViewTests
 
         var output = Render(pc);
 
-        Assert.Contains("Old HDD  ✗ Failing", output, StringComparison.Ordinal);
+        Assert.True(output.Contains("Old HDD  ✗ Failing", StringComparison.Ordinal), output);
         Assert.Contains("✗  1 finding", output, StringComparison.Ordinal);
     }
 
