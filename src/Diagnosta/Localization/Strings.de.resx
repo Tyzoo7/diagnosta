@@ -15,14 +15,8 @@
   <data name="AppTagline" xml:space="preserve">
     <value>PC-Checker – verstehe deinen PC auf einen Blick</value>
   </data>
-  <data name="LanguageLabel" xml:space="preserve">
-    <value>Sprache</value>
-  </data>
   <data name="LanguageName" xml:space="preserve">
     <value>Deutsch</value>
-  </data>
-  <data name="VersionLabel" xml:space="preserve">
-    <value>Version</value>
   </data>
   <data name="HintHelp" xml:space="preserve">
     <value>Starte mit --help, um alle Optionen zu sehen.</value>
@@ -60,9 +54,6 @@
   <data name="Unknown" xml:space="preserve">
     <value>unbekannt</value>
   </data>
-  <data name="OverviewTitle" xml:space="preserve">
-    <value>Systemüberblick</value>
-  </data>
   <data name="LabelWindows" xml:space="preserve">
     <value>Windows</value>
   </data>
@@ -76,7 +67,7 @@
     <value>Grafik</value>
   </data>
   <data name="LabelUptime" xml:space="preserve">
-    <value>Läuft seit letztem Neustart</value>
+    <value>Seit Neustart</value>
   </data>
   <data name="WindowsBuild" xml:space="preserve">
     <value>Build {0}</value>
@@ -111,14 +102,47 @@
   <data name="UptimeDays" xml:space="preserve">
     <value>{0} Tage, {1} Std.</value>
   </data>
-  <data name="PressAnyKeyToExit" xml:space="preserve">
-    <value>Drücke eine beliebige Taste zum Beenden…</value>
+  <data name="PressEscToExit" xml:space="preserve">
+    <value>Drücke Esc oder schließe dieses Fenster, um zu beenden.</value>
   </data>
   <data name="FindingsTitle" xml:space="preserve">
     <value>Hinweise</value>
   </data>
-  <data name="FindingAllGood" xml:space="preserve">
-    <value>Keine Auffälligkeiten gefunden.</value>
+  <data name="SectionSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="SectionDrives" xml:space="preserve">
+    <value>Laufwerke</value>
+  </data>
+  <data name="StatusAllGood" xml:space="preserve">
+    <value>Alles in Ordnung – keine Auffälligkeiten gefunden.</value>
+  </data>
+  <data name="StatusOneFinding" xml:space="preserve">
+    <value>1 Hinweis – Details siehe unten.</value>
+  </data>
+  <data name="StatusFindings" xml:space="preserve">
+    <value>{0} Hinweise – Details siehe unten.</value>
+  </data>
+  <data name="ByAuthor" xml:space="preserve">
+    <value>von {0}</value>
+  </data>
+  <data name="GpuIntegrated" xml:space="preserve">
+    <value>integriert, nutzt den Arbeitsspeicher mit</value>
+  </data>
+  <data name="DriveFree" xml:space="preserve">
+    <value>{0} frei von {1} ({2} belegt)</value>
+  </data>
+  <data name="DriveHdd" xml:space="preserve">
+    <value>HDD</value>
+  </data>
+  <data name="DrivesNone" xml:space="preserve">
+    <value>Keine internen Laufwerke gefunden</value>
+  </data>
+  <data name="FindingSystemDriveNearlyFull" xml:space="preserve">
+    <value>Laufwerk {0} (Windows) ist fast voll: nur noch {1} frei. Windows braucht freien Platz für Updates und temporäre Dateien und wird sonst langsamer.</value>
+  </data>
+  <data name="FindingDriveNearlyFull" xml:space="preserve">
+    <value>Laufwerk {0} ist fast voll: nur noch {1} frei.</value>
   </data>
   <data name="FindingWindows10" xml:space="preserve">
     <value>Windows 10 bekommt seit dem 14. Oktober 2025 keine regulären Sicherheitsupdates mehr. Wechsle auf Windows 11, wenn dein PC es unterstützt.</value>

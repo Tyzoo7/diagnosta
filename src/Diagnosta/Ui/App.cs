@@ -20,6 +20,8 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
     public const int ExitUsageError = 2;
     public const int ExitUnsupportedPlatform = 3;
 
+    private const string AuthorUrl = "https://github.com/Tyzoo7";
+
     public static string Version { get; } = ReadVersion();
 
     public int Run(CliParseResult parseResult)
@@ -56,10 +58,9 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
         }
 
         console.Write(new FigletText("Diagnosta").Color(Color.DeepSkyBlue1));
-        console.MarkupLine($"[grey]{Markup.Escape(Strings.AppTagline)}[/]");
-        console.MarkupLine(
-            $"[grey]{Markup.Escape(Strings.VersionLabel)} {Markup.Escape(Version)} · " +
-            $"{Markup.Escape(Strings.LanguageLabel)}: {Markup.Escape(Strings.LanguageName)}[/]");
+        console.MarkupLine($"[bold]{Markup.Escape(Strings.AppTagline)}[/]");
+        var author = string.Format(CultureInfo.CurrentCulture, Strings.ByAuthor, $"[link={AuthorUrl}]Tyzoo7[/]");
+        console.MarkupLine($"[grey]v{Markup.Escape(Version)} · {author} · {Markup.Escape(Strings.LanguageName)}[/]");
         console.WriteLine();
 
         var overview = systemInfo.Read();

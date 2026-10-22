@@ -2,7 +2,6 @@ namespace Diagnosta.Checks;
 
 internal enum Severity
 {
-    Ok,
     Info,
     Warning,
 }

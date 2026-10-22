@@ -78,7 +78,8 @@ public class AppTests
         Assert.Equal(App.ExitSuccess, exitCode);
         Assert.Contains(App.Version, output, StringComparison.Ordinal);
         Assert.Contains("Deutsch", output, StringComparison.Ordinal);
-        Assert.Contains("Systemüberblick", output, StringComparison.Ordinal);
+        Assert.Contains("von Tyzoo7", output, StringComparison.Ordinal);
+        Assert.Contains("Laufwerke", output, StringComparison.Ordinal);
         Assert.Contains("NVIDIA GeForce RTX 4070", output, StringComparison.Ordinal);
     }
 

@@ -54,6 +54,17 @@ public class WindowsSystemInfoSourceTests
     }
 
     [Fact]
+    public void SystemDrive_IsListedWithPlausibleSpace()
+    {
+        var drives = ReadRealMachine().Drives;
+
+        Assert.NotNull(drives);
+        var system = Assert.Single(drives, d => d.IsSystemDrive);
+        Assert.True(system.TotalBytes > 0);
+        Assert.True(system.FreeBytes <= system.TotalBytes);
+    }
+
+    [Fact]
     public void Uptime_IsPositive()
     {
         Assert.True(ReadRealMachine().Uptime > TimeSpan.Zero);

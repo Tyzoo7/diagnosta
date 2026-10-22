@@ -15,14 +15,8 @@
   <data name="AppTagline" xml:space="preserve">
     <value>PC Checker – understand your PC at a glance</value>
   </data>
-  <data name="LanguageLabel" xml:space="preserve">
-    <value>Language</value>
-  </data>
   <data name="LanguageName" xml:space="preserve">
     <value>English</value>
-  </data>
-  <data name="VersionLabel" xml:space="preserve">
-    <value>Version</value>
   </data>
   <data name="HintHelp" xml:space="preserve">
     <value>Run with --help to see all options.</value>
@@ -60,9 +54,6 @@
   <data name="Unknown" xml:space="preserve">
     <value>unknown</value>
   </data>
-  <data name="OverviewTitle" xml:space="preserve">
-    <value>System overview</value>
-  </data>
   <data name="LabelWindows" xml:space="preserve">
     <value>Windows</value>
   </data>
@@ -76,7 +67,7 @@
     <value>Graphics</value>
   </data>
   <data name="LabelUptime" xml:space="preserve">
-    <value>Running since last restart</value>
+    <value>Since restart</value>
   </data>
   <data name="WindowsBuild" xml:space="preserve">
     <value>Build {0}</value>
@@ -111,14 +102,47 @@
   <data name="UptimeDays" xml:space="preserve">
     <value>{0} days, {1} h</value>
   </data>
-  <data name="PressAnyKeyToExit" xml:space="preserve">
-    <value>Press any key to exit…</value>
+  <data name="PressEscToExit" xml:space="preserve">
+    <value>Press Esc or close this window to exit.</value>
   </data>
   <data name="FindingsTitle" xml:space="preserve">
     <value>Findings</value>
   </data>
-  <data name="FindingAllGood" xml:space="preserve">
-    <value>Nothing unusual found.</value>
+  <data name="SectionSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="SectionDrives" xml:space="preserve">
+    <value>Drives</value>
+  </data>
+  <data name="StatusAllGood" xml:space="preserve">
+    <value>All good – nothing unusual found.</value>
+  </data>
+  <data name="StatusOneFinding" xml:space="preserve">
+    <value>1 finding – details below.</value>
+  </data>
+  <data name="StatusFindings" xml:space="preserve">
+    <value>{0} findings – details below.</value>
+  </data>
+  <data name="ByAuthor" xml:space="preserve">
+    <value>by {0}</value>
+  </data>
+  <data name="GpuIntegrated" xml:space="preserve">
+    <value>integrated, shares system memory</value>
+  </data>
+  <data name="DriveFree" xml:space="preserve">
+    <value>{0} free of {1} ({2} used)</value>
+  </data>
+  <data name="DriveHdd" xml:space="preserve">
+    <value>HDD</value>
+  </data>
+  <data name="DrivesNone" xml:space="preserve">
+    <value>No internal drives found</value>
+  </data>
+  <data name="FindingSystemDriveNearlyFull" xml:space="preserve">
+    <value>Drive {0} (Windows) is nearly full: only {1} free. Windows needs free space for updates and temporary files and gets slower without it.</value>
+  </data>
+  <data name="FindingDriveNearlyFull" xml:space="preserve">
+    <value>Drive {0} is nearly full: only {1} free.</value>
   </data>
   <data name="FindingWindows10" xml:space="preserve">
     <value>Windows 10 has not received regular security updates since 14 October 2025. Upgrade to Windows 11 if your PC supports it.</value>

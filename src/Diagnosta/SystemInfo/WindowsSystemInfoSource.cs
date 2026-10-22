@@ -23,6 +23,7 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
             LogicalProcessors: Environment.ProcessorCount),
         Memory: Try(Kernel32.ReadMemory, null),
         Gpus: Try(Dxgi.ReadGpus, null),
+        Drives: Try(ReadDrives, null),
         Windows: Try(ReadWindows, null),
         // Counts since the last real boot, including sleep, hibernation and Fast Startup.
         Uptime: TimeSpan.FromMilliseconds(Environment.TickCount64),
@@ -37,6 +38,36 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
             DisplayVersion: ReadValue(CurrentVersionKey, "DisplayVersion") as string,
             Build: build,
             UpdateRevision: ReadValue(CurrentVersionKey, "UBR") as int?);
+    }
+
+    /// <summary>Internal drives only: USB sticks and network drives would just add noise.</summary>
+    private static IReadOnlyList<VolumeInfo> ReadDrives()
+    {
+        var systemRoot = Path.GetPathRoot(Environment.SystemDirectory);
+        var drives = new List<VolumeInfo>();
+
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            if (drive.DriveType != DriveType.Fixed || !drive.IsReady)
+            {
+                continue;
+            }
+
+            var letter = drive.Name.TrimEnd('\\');
+            var (kind, busType, model) = Try(() => Storage.Describe(letter), (DriveKind.Unknown, null, null));
+
+            drives.Add(new VolumeInfo(
+                Letter: letter,
+                Label: string.IsNullOrWhiteSpace(drive.VolumeLabel) ? null : drive.VolumeLabel,
+                TotalBytes: (ulong)drive.TotalSize,
+                FreeBytes: (ulong)drive.TotalFreeSpace,
+                IsSystemDrive: string.Equals(drive.Name, systemRoot, StringComparison.OrdinalIgnoreCase),
+                Kind: kind,
+                BusType: busType,
+                Model: model));
+        }
+
+        return drives;
     }
 
     /// <summary>

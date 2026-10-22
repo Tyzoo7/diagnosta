@@ -36,8 +36,8 @@ var exitCode = new App(console, errorConsole, systemInfo).Run(parseResult);
 if (OperatingSystem.IsWindows() && !Console.IsInputRedirected && Kernel32.IsAloneInConsoleWindow())
 {
     console.WriteLine();
-    console.MarkupLine($"[grey]{Markup.Escape(Strings.PressAnyKeyToExit)}[/]");
-    Console.ReadKey(intercept: true);
+    console.MarkupLine($"[grey]{Markup.Escape(Strings.PressEscToExit)}[/]");
+    ExitPrompt.WaitForEscape(() => Console.ReadKey(intercept: true));
 }
 
 return exitCode;
