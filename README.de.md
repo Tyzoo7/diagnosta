@@ -115,13 +115,10 @@ dotnet run --project src/Diagnosta   # Programm starten
 ## Release erstellen
 
 1. `<Version>` in `src/Diagnosta/Diagnosta.csproj` per Pull Request erhöhen und mergen.
-2. Den gemergten Commit auf `main` taggen und den Tag hochladen:
-   ```bash
-   git tag v0.5.0
-   git push origin v0.5.0
-   ```
-3. Der **Release**-Workflow prüft, ob Tag und Version zusammenpassen, führt die Tests aus,
-   baut die .exe und veröffentlicht ein GitHub-Release mit der .exe und `SHA256SUMS.txt`.
+2. **Actions → Release → Run workflow** öffnen und dieselbe Version eingeben, z. B. `0.5.0`.
+3. Der Workflow prüft die Eingabe (Format, passt zu `<Version>`, noch nicht veröffentlicht),
+   führt die Tests aus, baut die .exe und veröffentlicht ein GitHub-Release mit der .exe und
+   `SHA256SUMS.txt`. Den Tag `v0.5.0` setzt GitHub auf genau den Commit, der gebaut wurde.
 
 ## Projektstruktur
 
