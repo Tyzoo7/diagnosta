@@ -1,9 +1,14 @@
 name: Release
 
-# Runs when a version tag like v0.5.0 is pushed.
+# Started by hand: Actions -> Release -> "Run workflow", then enter a version like 0.5.0.
+# Publishing a version is a deliberate decision by the maintainer, not an automatic one.
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 0.5.0 (must match <Version> in Diagnosta.csproj)"
+        required: true
+        type: string
 
 # Nothing by default; each job asks only for what it needs.
 permissions: {}
@@ -19,6 +24,10 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      # User input is only ever read from an environment variable, never pasted into a
+      # script with ${{ }}: that would allow script injection.
+      VERSION: ${{ inputs.version }}
+      TAG: v${{ inputs.version }}
 
     steps:
       - name: Check out code
@@ -31,14 +40,26 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Check that the tag matches the project version
+      - name: Check the requested version
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }} # read-only here (job permission: contents: read)
         run: |
-          $tagVersion = "${{ github.ref_name }}".TrimStart("v")
-          $projectVersion = ([xml](Get-Content src/Diagnosta/Diagnosta.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
-          if ($tagVersion -ne $projectVersion) {
-            throw "Tag ${{ github.ref_name }} does not match <Version>$projectVersion</Version> in Diagnosta.csproj"
+          if ($env:GITHUB_REF -ne "refs/heads/main") {
+            throw "Releases are only made from main (this run is on $env:GITHUB_REF)."
           }
+          if ($env:VERSION -notmatch '^\d+\.\d+\.\d+$') {
+            throw "'$env:VERSION' is not a version like 0.5.0."
+          }
+          $projectVersion = ([xml](Get-Content src/Diagnosta/Diagnosta.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ($env:VERSION -ne $projectVersion) {
+            throw "You entered $env:VERSION, but Diagnosta.csproj says <Version>$projectVersion</Version>."
+          }
+          gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$env:TAG" --silent 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            throw "$env:TAG already exists. Releases cannot be changed; raise the version instead."
+          }
+          $global:LASTEXITCODE = 0
 
       - name: Restore (locked versions only)
         run: dotnet restore --locked-mode
@@ -62,7 +83,7 @@ jobs:
       - name: Name the exe and write checksums
         shell: pwsh
         run: |
-          $name = "Diagnosta-${{ github.ref_name }}-win-x64.exe"
+          $name = "Diagnosta-$env:TAG-win-x64.exe"
           New-Item -ItemType Directory -Force release | Out-Null
           Copy-Item publish/Diagnosta.exe "release/$name"
           $hash = (Get-FileHash "release/$name" -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -95,13 +116,15 @@ jobs:
 
       # Draft first, attach files, then publish: required for immutable releases,
       # where nothing can be added or changed after publishing.
+      # GitHub creates the tag on the exact commit that was built and tested ($GITHUB_SHA)
+      # when the release is published.
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
+          TAG: v${{ inputs.version }}
         run: |
           prerelease=""
           if [[ "$TAG" == v0.* ]]; then prerelease="--prerelease"; fi
-          gh release create "$TAG" release/* --draft --verify-tag --generate-notes --title "Diagnosta $TAG" $prerelease
+          gh release create "$TAG" release/* --draft --target "$GITHUB_SHA" --generate-notes --title "Diagnosta $TAG" $prerelease
           gh release edit "$TAG" --draft=false
