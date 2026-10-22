@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.2).** The first check, the system overview, is in place.
+> **Status: early development (v0.3).** The first check, the system overview, is in place.
 > More checks are being added one by one.
 
 ## Why another diagnostics tool?
@@ -62,6 +62,19 @@ Findings
 Everything is read with built-in Windows interfaces (registry, kernel32, DXGI).
 No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown
 correctly, unlike tools based on WMI.
+
+## Trying it out
+
+There is no official release yet. Every CI run builds a standalone `Diagnosta.exe`
+(about 14 MB, no .NET installation needed):
+
+1. Open **Actions → CI**, pick the latest green run, and download **Diagnosta-win-x64**
+   under *Artifacts*.
+2. Unzip it, open a terminal in that folder, and run `.\Diagnosta.exe`.
+   Double-clicking also works: the window stays open until you press a key.
+3. Optionally, compare `Get-FileHash .\Diagnosta.exe` with the SHA-256 shown in the run summary.
+
+The exe is not code-signed yet, so Windows SmartScreen may warn the first time you run it.
 
 ## Usage
 

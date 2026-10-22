@@ -45,13 +45,35 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
-      - name: Smoke test
+      - name: Publish standalone exe
+        run: dotnet publish src/Diagnosta --configuration Release --runtime win-x64 --self-contained -p:RestoreLockedMode=true --output publish
+
+      - name: Smoke test (the exact exe users download)
         shell: pwsh
         run: |
-          $exe = "src/Diagnosta/bin/Release/net10.0/Diagnosta.exe"
+          $exe = "publish/Diagnosta.exe"
           & $exe --version
           if ($LASTEXITCODE -ne 0) { throw "--version failed" }
           & $exe --lang en
           if ($LASTEXITCODE -ne 0) { throw "system overview (English) failed" }
           & $exe --lang de
           if ($LASTEXITCODE -ne 0) { throw "system overview (German) failed" }
+
+      - name: Record size and SHA-256 fingerprint
+        shell: pwsh
+        run: |
+          $file = Get-Item "publish/Diagnosta.exe"
+          $hash = (Get-FileHash $file -Algorithm SHA256).Hash
+          $sizeMb = [math]::Round($file.Length / 1MB, 1)
+          "### Diagnosta.exe (win-x64)" >> $env:GITHUB_STEP_SUMMARY
+          "| Size | SHA-256 |" >> $env:GITHUB_STEP_SUMMARY
+          "|---|---|" >> $env:GITHUB_STEP_SUMMARY
+          "| $sizeMb MB | ``$hash`` |" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload exe
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: Diagnosta-win-x64
+          path: publish/Diagnosta.exe
+          if-no-files-found: error
+          retention-days: 14

@@ -111,6 +111,9 @@
   <data name="UptimeDays" xml:space="preserve">
     <value>{0} days, {1} h</value>
   </data>
+  <data name="PressAnyKeyToExit" xml:space="preserve">
+    <value>Press any key to exit…</value>
+  </data>
   <data name="FindingsTitle" xml:space="preserve">
     <value>Findings</value>
   </data>

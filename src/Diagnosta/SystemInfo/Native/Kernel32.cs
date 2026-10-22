@@ -62,6 +62,17 @@ internal static partial class Kernel32
         }
     }
 
+    /// <summary>
+    /// True when no other program shares our console window. That happens when
+    /// Diagnosta is double-clicked in Explorer: Windows opens a new window just for us
+    /// and closes it the moment we exit.
+    /// </summary>
+    public static unsafe bool IsAloneInConsoleWindow()
+    {
+        var processIds = stackalloc uint[2];
+        return GetConsoleProcessList(processIds, 2) == 1;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct MemoryStatusEx
     {
@@ -83,4 +94,7 @@ internal static partial class Kernel32
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetLogicalProcessorInformationEx(int relationshipType, IntPtr buffer, ref uint returnedLength);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static unsafe partial uint GetConsoleProcessList(uint* processIds, uint count);
 }
