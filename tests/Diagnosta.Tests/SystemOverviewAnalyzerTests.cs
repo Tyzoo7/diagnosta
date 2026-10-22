@@ -172,6 +172,41 @@ public class SystemOverviewAnalyzerTests
         Assert.Contains("8 GB", warning.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("Healthy", null)]
+    [InlineData("Unknown", null)]
+    [InlineData("Warning", "Warning")]
+    [InlineData("Unhealthy", "Critical")]
+    public void DiskHealth_IsReportedWithMatchingSeverity(string health, string? expected)
+    {
+        var disk = new PhysicalDiskInfo("Crucial MX500", DriveKind.Ssd, Enum.Parse<DiskHealth>(health));
+        var pc = FakeSystemInfoSource.HealthyPc with { PhysicalDisks = [disk] };
+
+        var finding = Analyze(pc).SingleOrDefault();
+
+        Assert.Equal(expected, finding?.Severity.ToString());
+        if (finding is not null)
+        {
+            Assert.Contains("Crucial MX500", finding.Message, StringComparison.Ordinal);
+            Assert.Contains("Back up", finding.Message, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void FailingDisk_ComesFirst_EvenBeforeOtherWarnings()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with
+        {
+            Uptime = TimeSpan.FromDays(30),
+            PhysicalDisks = [new PhysicalDiskInfo(null, DriveKind.Hdd, DiskHealth.Unhealthy)],
+        };
+
+        var findings = Analyze(pc);
+
+        Assert.Equal(Severity.Critical, findings[0].Severity);
+        Assert.Contains("Unnamed disk", findings[0].Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void EmptyOrUnknownDriveSize_DoesNotWarn()
     {

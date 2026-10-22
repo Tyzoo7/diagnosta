@@ -47,6 +47,20 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
+      # Puts the names and messages of failed tests on the pull request page, so nobody
+      # has to dig through the raw log to find out what broke.
+      - name: Show failed tests on the pull request
+        if: failure()
+        shell: pwsh
+        run: |
+          $output = & tests/Diagnosta.Tests/bin/Release/net10.0/Diagnosta.Tests.exe 2>&1 | Out-String
+          $exitCode = $LASTEXITCODE
+          $lines = $output -split "\r?\n" | Where-Object { $_.Trim() } | Select-Object -Last 120
+          # Workflow commands need %, CR and LF escaped.
+          $message = ($lines | ForEach-Object { $_ -replace '%', '%25' }) -join '%0A'
+          Write-Output "::error title=Failed tests (exit code $exitCode)::$message"
+          exit 0
+
       - name: Show .NET version used
         run: dotnet --info
 

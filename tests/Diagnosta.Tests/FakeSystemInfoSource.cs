@@ -16,6 +16,11 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
             new VolumeInfo("C:", null, 931 * GB, 412 * GB, IsSystemDrive: true, DriveKind.Ssd, "NVMe", "Samsung SSD 980 PRO 1TB"),
             new VolumeInfo("D:", "Games", 1863 * GB, 900 * GB, IsSystemDrive: false, DriveKind.Hdd, "SATA", "WDC WD20EZRZ-00Z5HB0"),
         ],
+        PhysicalDisks:
+        [
+            new PhysicalDiskInfo("Samsung SSD 980 PRO 1TB", DriveKind.Ssd, DiskHealth.Healthy),
+            new PhysicalDiskInfo("WDC WD20EZRZ-00Z5HB0", DriveKind.Hdd, DiskHealth.Healthy),
+        ],
         Windows: new WindowsInfo("Windows 11", "Pro", "24H2", Build: 26100, UpdateRevision: 2314),
         Uptime: TimeSpan.FromHours(5.5),
         FastStartupEnabled: false);
@@ -26,6 +31,7 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         Memory: null,
         Gpus: null,
         Drives: null,
+        PhysicalDisks: null,
         Windows: null,
         Uptime: TimeSpan.Zero,
         FastStartupEnabled: null);

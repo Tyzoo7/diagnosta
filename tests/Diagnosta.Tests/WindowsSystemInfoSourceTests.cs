@@ -65,6 +65,16 @@ public class WindowsSystemInfoSourceTests
     }
 
     [Fact]
+    public void PhysicalDisks_CanBeQueriedWithoutAdminRights()
+    {
+        // Null would mean the WMI query itself failed; an empty list is fine on odd VMs.
+        var disks = ReadRealMachine().PhysicalDisks;
+
+        Assert.NotNull(disks);
+        Assert.All(disks, d => Assert.NotEqual(DiskHealth.Unhealthy, d.Health));
+    }
+
+    [Fact]
     public void Uptime_IsPositive()
     {
         Assert.True(ReadRealMachine().Uptime > TimeSpan.Zero);

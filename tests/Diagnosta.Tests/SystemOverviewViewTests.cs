@@ -11,13 +11,7 @@ public class SystemOverviewViewTests
     {
         using var _ = new CultureScope(culture);
         var writer = new StringWriter();
-        var console = AnsiConsole.Create(new AnsiConsoleSettings
-        {
-            Ansi = AnsiSupport.No,
-            ColorSystem = ColorSystemSupport.NoColors,
-            Out = new AnsiConsoleOutput(writer),
-        });
-        console.Profile.Width = 140;
+        var console = TestConsole.Create(writer, width: 140);
 
         SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview));
         return writer.ToString();
@@ -45,6 +39,36 @@ public class SystemOverviewViewTests
         Assert.Contains("Windows · NVMe SSD · Samsung SSD 980 PRO 1TB", output, StringComparison.Ordinal);
         Assert.Contains("412 GB free of 931 GB (56 % used)", output, StringComparison.Ordinal);
         Assert.Contains("Games · SATA HDD · WDC WD20EZRZ-00Z5HB0", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiskHealth_IsShownPerPhysicalDisk()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc, "de");
+
+        Assert.Contains("Zustand", output, StringComparison.Ordinal);
+        Assert.True(output.Contains("Samsung SSD 980 PRO 1TB  ✓ Gesund", StringComparison.Ordinal), output);
+        Assert.Contains("WDC WD20EZRZ-00Z5HB0  ✓ Gesund", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailingDisk_IsMarkedAndTurnsTheStatusCritical()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { PhysicalDisks = [new PhysicalDiskInfo("Old HDD", DriveKind.Hdd, DiskHealth.Unhealthy)] };
+
+        var output = Render(pc);
+
+        Assert.True(output.Contains("Old HDD  ✗ Failing", StringComparison.Ordinal), output);
+        Assert.Contains("✗  1 finding", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UnknownDiskHealth_SaysUnknown()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc with { PhysicalDisks = null });
+
+        Assert.Contains("Health", output, StringComparison.Ordinal);
+        Assert.Contains("unknown", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -79,8 +103,7 @@ public class SystemOverviewViewTests
         var findings = Enumerable.Range(0, count).Select(i => new Finding(Severity.Info, $"Tip {i}")).ToList();
         using var _ = new CultureScope("en");
         var writer = new StringWriter();
-        var console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.No, ColorSystem = ColorSystemSupport.NoColors, Out = new AnsiConsoleOutput(writer) });
-        console.Profile.Width = 120;
+        var console = TestConsole.Create(writer);
 
         SystemOverviewView.Render(console, FakeSystemInfoSource.HealthyPc, findings);
 

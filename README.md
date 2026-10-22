@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.5).** The system overview and drive overview are in place.
+> **Status: early development (v0.6).** System overview, drive overview and drive health are in place.
 > More checks are being added one by one.
 
 ## Why another diagnostics tool?
@@ -27,7 +27,7 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 
 - [x] System overview: CPU, RAM, GPU, Windows version, uptime, with plain-language hints
 - [x] Drive overview: SSD/HDD, model, free space, warning when nearly full
-- [ ] Drive health (wear, errors)
+- [x] Drive health: healthy / warning / failing, as reported by Windows (no admin rights needed)
 - [ ] Storage analysis: largest folders and files
 - [ ] Cleanup suggestions: temp files, update cache, recycle bin
 - [ ] Startup programs
@@ -56,8 +56,9 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 │ Since restart  23 days, 4 h                                                      │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Drives ─────────────────────────────────────────────────────────────────────────╮
-│ C:  Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                                 │
-│     █████████████████░░░░░░░░░░░░░ 412 GB free of 931 GB (56 % used)             │
+│ C:      Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                             │
+│         █████████████████░░░░░░░░░░░░░ 412 GB free of 931 GB (56 % used)         │
+│ Health  Samsung SSD 980 PRO 1TB  ✓ Healthy                                       │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Findings ───────────────────────────────────────────────────────────────────────╮
 │ ! This PC has not been restarted for 23 days. A restart finishes pending updates │
@@ -67,7 +68,7 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Everything is read with built-in Windows interfaces (registry, kernel32, DXGI, storage IOCTLs).
+Everything is read with built-in Windows interfaces (registry, kernel32, DXGI, storage IOCTLs, WMI).
 No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown
 correctly, unlike tools based on WMI. Drive serial numbers are never read.
 

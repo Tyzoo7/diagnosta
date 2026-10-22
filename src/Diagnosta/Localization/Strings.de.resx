@@ -114,6 +114,27 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Laufwerke</value>
   </data>
+  <data name="LabelHealth" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="HealthHealthy" xml:space="preserve">
+    <value>Gesund</value>
+  </data>
+  <data name="HealthWarning" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="HealthUnhealthy" xml:space="preserve">
+    <value>Defekt</value>
+  </data>
+  <data name="DiskUnnamed" xml:space="preserve">
+    <value>Unbenanntes Laufwerk</value>
+  </data>
+  <data name="FindingDiskWarning" xml:space="preserve">
+    <value>{0} meldet erste Probleme. Sichere deine wichtigen Dateien und behalte das Laufwerk im Auge.</value>
+  </data>
+  <data name="FindingDiskUnhealthy" xml:space="preserve">
+    <value>{0} ist defekt oder fällt bald aus. Sichere sofort deine Dateien und lass das Laufwerk ersetzen.</value>
+  </data>
   <data name="StatusAllGood" xml:space="preserve">
     <value>Alles in Ordnung – keine Auffälligkeiten gefunden.</value>
   </data>
