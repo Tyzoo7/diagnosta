@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.4).** The system overview and drive overview are in place.
+> **Status: early development (v0.5).** The system overview and drive overview are in place.
 > More checks are being added one by one.
 
 ## Why another diagnostics tool?
@@ -71,18 +71,24 @@ Everything is read with built-in Windows interfaces (registry, kernel32, DXGI, s
 No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown
 correctly, unlike tools based on WMI. Drive serial numbers are never read.
 
-## Trying it out
+## Download
 
-There is no official release yet. Every CI run builds a standalone `Diagnosta.exe`
-(about 14 MB, no .NET installation needed):
+Get the latest `Diagnosta-vX.Y.Z-win-x64.exe` from the
+[Releases page](https://github.com/Tyzoo7/diagnosta/releases). It is a single file of
+about 14 MB and needs no installation or .NET runtime.
 
-1. Open **Actions → CI**, pick the latest green run, and download **Diagnosta-win-x64**
-   under *Artifacts*.
-2. Unzip it, open a terminal in that folder, and run `.\Diagnosta.exe`.
-   Double-clicking also works: the window stays open until you press Esc or close it.
-3. Optionally, compare `Get-FileHash .\Diagnosta.exe` with the SHA-256 shown in the run summary.
+1. Open a terminal in the download folder and run `.\Diagnosta-v0.5.0-win-x64.exe`
+   (use the name of the version you downloaded). Double-clicking also works: the window
+   stays open until you press Esc or close it.
+2. Optionally, check that the file is genuine by comparing
+   `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` with the value in `SHA256SUMS.txt`
+   from the same release.
 
 The exe is not code-signed yet, so Windows SmartScreen may warn the first time you run it.
+Versions below 1.0 are marked as pre-releases.
+
+Every CI run also builds a test exe (**Actions → CI → Artifacts**), for trying out
+changes before they are released.
 
 ## Usage
 
@@ -103,6 +109,17 @@ cd diagnosta
 dotnet test                          # build and run all tests
 dotnet run --project src/Diagnosta   # start the app
 ```
+
+## Releasing
+
+1. Raise `<Version>` in `src/Diagnosta/Diagnosta.csproj` in a pull request and merge it.
+2. Tag the merged commit on `main` and push the tag:
+   ```bash
+   git tag v0.5.0
+   git push origin v0.5.0
+   ```
+3. The **Release** workflow checks that the tag matches the version, runs the tests,
+   builds the exe and publishes a GitHub release with the exe and `SHA256SUMS.txt`.
 
 ## Project structure
 

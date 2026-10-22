@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.4).** Systemüberblick und Laufwerksübersicht sind fertig.
+> **Status: frühe Entwicklung (v0.5).** Systemüberblick und Laufwerksübersicht sind fertig.
 > Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
@@ -73,18 +73,24 @@ Speicher-IOCTLs). Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete.
 über 4 GB wird korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
 Seriennummern von Laufwerken werden nie ausgelesen.
 
-## Ausprobieren
+## Download
 
-Ein offizielles Release gibt es noch nicht. Jeder CI-Lauf baut eine eigenständige
-`Diagnosta.exe` (etwa 14 MB, ohne .NET-Installation lauffähig):
+Lade die neueste `Diagnosta-vX.Y.Z-win-x64.exe` von der
+[Releases-Seite](https://github.com/Tyzoo7/diagnosta/releases) herunter. Es ist eine
+einzelne Datei mit etwa 14 MB, ohne Installation und ohne .NET-Laufzeit.
 
-1. Öffne **Actions → CI**, wähle den neuesten grünen Lauf und lade unter *Artifacts*
-   **Diagnosta-win-x64** herunter.
-2. Entpacke die Datei, öffne ein Terminal in diesem Ordner und starte `.\Diagnosta.exe`.
-   Ein Doppelklick funktioniert auch: Das Fenster bleibt offen, bis du Esc drückst oder es schließt.
-3. Optional kannst du `Get-FileHash .\Diagnosta.exe` mit dem SHA-256 in der Zusammenfassung des Laufs vergleichen.
+1. Öffne ein Terminal im Download-Ordner und starte `.\Diagnosta-v0.5.0-win-x64.exe`
+   (mit dem Namen der heruntergeladenen Version). Ein Doppelklick funktioniert auch: Das
+   Fenster bleibt offen, bis du Esc drückst oder es schließt.
+2. Optional kannst du prüfen, ob die Datei echt ist: Vergleiche
+   `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` mit dem Wert in `SHA256SUMS.txt`
+   aus demselben Release.
 
-Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start eventuell.
+Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start
+eventuell. Versionen unter 1.0 sind als Vorabversion (Pre-release) markiert.
+
+Jeder CI-Lauf baut außerdem eine Test-.exe (**Actions → CI → Artifacts**), um Änderungen
+vor einem Release auszuprobieren.
 
 ## Verwendung
 
@@ -105,6 +111,17 @@ cd diagnosta
 dotnet test                          # bauen und alle Tests ausführen
 dotnet run --project src/Diagnosta   # Programm starten
 ```
+
+## Release erstellen
+
+1. `<Version>` in `src/Diagnosta/Diagnosta.csproj` per Pull Request erhöhen und mergen.
+2. Den gemergten Commit auf `main` taggen und den Tag hochladen:
+   ```bash
+   git tag v0.5.0
+   git push origin v0.5.0
+   ```
+3. Der **Release**-Workflow prüft, ob Tag und Version zusammenpassen, führt die Tests aus,
+   baut die .exe und veröffentlicht ein GitHub-Release mit der .exe und `SHA256SUMS.txt`.
 
 ## Projektstruktur
 

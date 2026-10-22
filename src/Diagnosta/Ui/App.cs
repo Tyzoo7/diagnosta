@@ -103,14 +103,29 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
         errorConsole.MarkupLine($"[grey]{Markup.Escape(Strings.HintHelp)}[/]");
     }
 
-    private static string ReadVersion()
-    {
-        var informational = typeof(App).Assembly
+    private static string ReadVersion() =>
+        FormatVersion(typeof(App).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion ?? "0.0.0";
+            .InformationalVersion ?? "0.0.0");
 
-        // The SDK appends "+<commit hash>"; users only need the version number.
-        var plus = informational.IndexOf('+', StringComparison.Ordinal);
-        return plus < 0 ? informational : informational[..plus];
+    /// <summary>
+    /// The SDK stores "0.5.0+&lt;full commit hash&gt;". We show "0.5.0 (abc1234)" so two builds
+    /// with the same version number can still be told apart.
+    /// </summary>
+    internal static string FormatVersion(string informationalVersion)
+    {
+        ArgumentNullException.ThrowIfNull(informationalVersion);
+
+        var plus = informationalVersion.IndexOf('+', StringComparison.Ordinal);
+        if (plus < 0)
+        {
+            return informationalVersion;
+        }
+
+        var commit = informationalVersion[(plus + 1)..];
+        var shortCommit = commit.Length > 7 ? commit[..7] : commit;
+        return shortCommit.Length == 0
+            ? informationalVersion[..plus]
+            : $"{informationalVersion[..plus]} ({shortCommit})";
     }
 }
