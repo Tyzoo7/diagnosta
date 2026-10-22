@@ -47,6 +47,24 @@ internal enum DriveKind
     Hdd,
 }
 
+/// <summary>Where an autostart entry comes from.</summary>
+internal enum StartupScope
+{
+    /// <summary>Only for the signed-in user.</summary>
+    CurrentUser,
+
+    /// <summary>For everyone who signs in to this PC.</summary>
+    AllUsers,
+}
+
+/// <summary>A program that starts with Windows, as listed in Task Manager's "Startup apps".</summary>
+/// <param name="FileName">Just the program file, e.g. "OneDrive.exe": full paths can contain the user name.</param>
+internal sealed record StartupEntry(string Name, string? FileName, StartupScope Scope, bool Enabled);
+
+/// <summary>All running processes of one program added together (e.g. every chrome.exe).</summary>
+/// <param name="CpuPercent">Share of the whole CPU over the measuring window, 0–100.</param>
+internal sealed record ProcessUsage(string Name, int Instances, ulong MemoryBytes, double? CpuPercent);
+
 /// <summary>What Windows' storage service says about a disk (MSFT_PhysicalDisk.HealthStatus).</summary>
 internal enum DiskHealth
 {
@@ -93,6 +111,9 @@ internal sealed record SystemOverview(
     IReadOnlyList<GpuInfo>? Gpus,
     IReadOnlyList<VolumeInfo>? Drives,
     IReadOnlyList<PhysicalDiskInfo>? PhysicalDisks,
+    IReadOnlyList<StartupEntry>? StartupApps,
+    IReadOnlyList<ProcessUsage>? Processes,
+    bool? RestartPending,
     WindowsInfo? Windows,
     TimeSpan Uptime,
     bool? FastStartupEnabled);

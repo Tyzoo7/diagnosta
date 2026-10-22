@@ -120,6 +120,7 @@ public class SystemOverviewAnalyzerTests
             FastStartupEnabled = true,
             Memory = new MemoryInfo(4 * GB, GB / 10),
             MemoryModules = null,
+            Processes = null,
         };
 
         var findings = Analyze(pc);
@@ -218,9 +219,9 @@ public class SystemOverviewAnalyzerTests
     {
         var pc = FakeSystemInfoSource.HealthyPc with { Cpu = FakeSystemInfoSource.HealthyPc.Cpu with { UsagePercent = usage } };
 
-        var finding = Analyze(pc).SingleOrDefault();
+        var finding = Analyze(pc).SingleOrDefault(f => f.Area == CheckArea.Processor);
 
-        Assert.Equal(expectWarning, finding is { Severity: Severity.Warning, Area: CheckArea.Processor });
+        Assert.Equal(expectWarning, finding is { Severity: Severity.Warning });
     }
 
     [Theory]
@@ -257,6 +258,50 @@ public class SystemOverviewAnalyzerTests
             Assert.Contains("Intel(R) UHD Graphics", tip.Message, StringComparison.Ordinal);
             Assert.Contains(year.ToString(System.Globalization.CultureInfo.InvariantCulture), tip.Message, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void PendingRestart_IsWarnedAbout()
+    {
+        var finding = Assert.Single(Analyze(FakeSystemInfoSource.HealthyPc with { RestartPending = true }));
+
+        Assert.Equal(Severity.Warning, finding.Severity);
+        Assert.Equal(CheckArea.Windows, finding.Area);
+    }
+
+    [Theory]
+    [InlineData(9, false)]
+    [InlineData(10, true)]
+    public void ManyStartupApps_ArePointedOut_CountingOnlyEnabledOnes(int enabled, bool expectTip)
+    {
+        var apps = Enumerable.Range(0, enabled).Select(i => new StartupEntry($"App{i}", null, StartupScope.CurrentUser, true))
+            .Append(new StartupEntry("Off", null, StartupScope.CurrentUser, false))
+            .ToList();
+
+        var tip = Analyze(FakeSystemInfoSource.HealthyPc with { StartupApps = apps }).SingleOrDefault();
+
+        Assert.Equal(expectTip, tip is { Area: CheckArea.Startup });
+    }
+
+    [Fact]
+    public void FullMemory_NamesTheProgramUsingTheMost()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { Memory = new MemoryInfo(32 * GB, GB) };
+
+        var findings = Analyze(pc);
+
+        var culprit = Assert.Single(findings, f => f.Area == CheckArea.Processes);
+        Assert.Contains("chrome (3 GB)", culprit.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BusyProcessor_NamesTheProgramUsingTheMost()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { Cpu = FakeSystemInfoSource.HealthyPc.Cpu with { UsagePercent = 97 } };
+
+        var culprit = Assert.Single(Analyze(pc), f => f.Area == CheckArea.Processes);
+
+        Assert.Contains("chrome", culprit.Message, StringComparison.Ordinal);
     }
 
     [Fact]

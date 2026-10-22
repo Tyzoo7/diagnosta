@@ -27,6 +27,20 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
             new PhysicalDiskInfo("Samsung SSD 980 PRO 1TB", DriveKind.Ssd, DiskHealth.Healthy, DiskNumber: 0),
             new PhysicalDiskInfo("WDC WD20EZRZ-00Z5HB0", DriveKind.Hdd, DiskHealth.Healthy, DiskNumber: 1),
         ],
+        StartupApps:
+        [
+            new StartupEntry("OneDrive", "OneDrive.exe", StartupScope.CurrentUser, Enabled: true),
+            new StartupEntry("SecurityHealth", "SecurityHealthSystray.exe", StartupScope.AllUsers, Enabled: true),
+            new StartupEntry("Spotify", "Spotify.exe", StartupScope.CurrentUser, Enabled: false),
+        ],
+        Processes:
+        [
+            new ProcessUsage("chrome", 14, 3 * GB, 4.5),
+            new ProcessUsage("Discord", 6, GB, 0.8),
+            new ProcessUsage("explorer", 1, GB / 4, 0.2),
+            new ProcessUsage("System", 1, GB / 8, null),
+        ],
+        RestartPending: false,
         Windows: new WindowsInfo("Windows 11", "Pro", "24H2", Build: 26100, UpdateRevision: 2314),
         Uptime: TimeSpan.FromHours(5.5),
         FastStartupEnabled: false);
@@ -39,6 +53,9 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         Gpus: null,
         Drives: null,
         PhysicalDisks: null,
+        StartupApps: null,
+        Processes: null,
+        RestartPending: null,
         Windows: null,
         Uptime: TimeSpan.Zero,
         FastStartupEnabled: null);
