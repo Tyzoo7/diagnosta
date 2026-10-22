@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -37,7 +38,7 @@ internal static unsafe partial class Wmi
     private const ushort VtI4 = 3;
 
     private const string StorageNamespace = @"ROOT\Microsoft\Windows\Storage";
-    private const string Query = "SELECT FriendlyName, MediaType, BusType, HealthStatus FROM MSFT_PhysicalDisk";
+    private const string Query = "SELECT DeviceId, FriendlyName, MediaType, BusType, HealthStatus FROM MSFT_PhysicalDisk";
 
     private static readonly Guid ClsidWbemLocator = new("4590f811-1d3a-11d0-891f-00aa004b2e24");
     private static readonly Guid IidWbemLocator = new("dc12a687-737f-11cf-884d-00aa004b2e24");
@@ -144,7 +145,9 @@ internal static unsafe partial class Wmi
                         1 => DiskHealth.Warning,
                         2 => DiskHealth.Unhealthy,
                         _ => DiskHealth.Unknown,
-                    }));
+                    },
+                    // DeviceId is the disk number as text, e.g. "0" for Disk 0.
+                    DiskNumber: int.TryParse(ReadString(item, "DeviceId"), NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number : null));
             }
             finally
             {

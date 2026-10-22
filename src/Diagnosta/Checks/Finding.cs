@@ -9,5 +9,15 @@ internal enum Severity
     Critical,
 }
 
+/// <summary>The parts of the PC Diagnosta looks at; each one is also a menu item.</summary>
+internal enum CheckArea
+{
+    Windows,
+    Processor,
+    Memory,
+    Graphics,
+    Drives,
+}
+
 /// <summary>One plain-language observation about the PC.</summary>
-internal sealed record Finding(Severity Severity, string Message);
+internal sealed record Finding(Severity Severity, CheckArea Area, string Message);

@@ -36,6 +36,42 @@
   <data name="HelpOptionVersion" xml:space="preserve">
     <value>Version anzeigen</value>
   </data>
+  <data name="HelpOptionFull" xml:space="preserve">
+    <value>Kompletten PC-Check sofort ausgeben, ohne Menü</value>
+  </data>
+  <data name="MenuTitle" xml:space="preserve">
+    <value>Was möchtest du tun?</value>
+  </data>
+  <data name="MenuHint" xml:space="preserve">
+    <value>Mit ↑ ↓ auswählen und mit Enter bestätigen.</value>
+  </data>
+  <data name="MenuFullCheck" xml:space="preserve">
+    <value>Kompletter PC-Check</value>
+  </data>
+  <data name="MenuAbout" xml:space="preserve">
+    <value>Info über Diagnosta</value>
+  </data>
+  <data name="MenuChangeLanguage" xml:space="preserve">
+    <value>Sprache wechseln</value>
+  </data>
+  <data name="MenuQuit" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="AboutVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="AboutAuthor" xml:space="preserve">
+    <value>Entwickelt von</value>
+  </data>
+  <data name="AboutPrivacy" xml:space="preserve">
+    <value>Datenschutz</value>
+  </data>
+  <data name="AboutPrivacyText" xml:space="preserve">
+    <value>Diagnosta liest nur Informationen. Es verändert nichts, verbindet sich nie mit dem Internet und sammelt keine Daten.</value>
+  </data>
+  <data name="AboutLicense" xml:space="preserve">
+    <value>Lizenz</value>
+  </data>
   <data name="HelpOptionLanguage" xml:space="preserve">
     <value>Sprache festlegen (de, en). Standard: deine Windows-Sprache</value>
   </data>
@@ -72,6 +108,9 @@
   <data name="WindowsBuild" xml:space="preserve">
     <value>Build {0}</value>
   </data>
+  <data name="WindowsVersion" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
   <data name="CpuCoresThreads" xml:space="preserve">
     <value>{0} Kerne, {1} Threads</value>
   </data>
@@ -91,7 +130,7 @@
     <value>Keine Grafikkarte erkannt</value>
   </data>
   <data name="GpuMemory" xml:space="preserve">
-    <value>{0} eigener Speicher</value>
+    <value>Eigene Grafikkarte mit {0} Speicher</value>
   </data>
   <data name="UptimeHoursMinutes" xml:space="preserve">
     <value>{0} Std. {1} Min.</value>
@@ -148,7 +187,7 @@
     <value>von {0}</value>
   </data>
   <data name="GpuIntegrated" xml:space="preserve">
-    <value>integriert, nutzt den Arbeitsspeicher mit</value>
+    <value>Integrierte Grafik, nutzt den Arbeitsspeicher mit</value>
   </data>
   <data name="DriveFree" xml:space="preserve">
     <value>{0} frei von {1} ({2} belegt)</value>

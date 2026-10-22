@@ -12,6 +12,7 @@ internal static class CliParser
     {
         var command = CliCommand.Run;
         string? language = null;
+        var fullCheck = false;
 
         for (var i = 0; i < args.Count; i++)
         {
@@ -30,6 +31,10 @@ internal static class CliParser
                         command = CliCommand.Version;
                     }
 
+                    break;
+
+                case "-f" or "--full":
+                    fullCheck = true;
                     break;
 
                 case "--lang":
@@ -68,6 +73,6 @@ internal static class CliParser
             language = language.ToLowerInvariant();
         }
 
-        return CliParseResult.Success(new CliOptions(command, language));
+        return CliParseResult.Success(new CliOptions(command, language, fullCheck));
     }
 }

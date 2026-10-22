@@ -30,10 +30,16 @@ foreach (var c in new[] { console, errorConsole })
 
 ISystemInfoSource? systemInfo = OperatingSystem.IsWindows() ? new WindowsSystemInfoSource() : null;
 
-var exitCode = new App(console, errorConsole, systemInfo).Run(parseResult);
+// The menu needs someone at the keyboard: not when input or output is redirected,
+// and not in CI, where Spectre.Console reports the console as non-interactive.
+var canShowMenu = !Console.IsInputRedirected && !Console.IsOutputRedirected && console.Profile.Capabilities.Interactive;
+var interactive = canShowMenu ? new InteractiveOptions(new SpectreChoicePrompt(console), console.Clear) : null;
 
-// Started by double-click: keep the window open, or the user never sees the result.
-if (OperatingSystem.IsWindows() && !Console.IsInputRedirected && Kernel32.IsAloneInConsoleWindow())
+var exitCode = new App(console, errorConsole, systemInfo, interactive).Run(parseResult);
+
+// Without the menu (e.g. "--full" after a double-click) the window would close at once.
+var usedMenu = interactive is not null && parseResult.Options is { Command: CliCommand.Run, FullCheck: false } && systemInfo is not null;
+if (OperatingSystem.IsWindows() && !usedMenu && !Console.IsInputRedirected && Kernel32.IsAloneInConsoleWindow())
 {
     console.WriteLine();
     console.MarkupLine($"[grey]{Markup.Escape(Strings.PressEscToExit)}[/]");

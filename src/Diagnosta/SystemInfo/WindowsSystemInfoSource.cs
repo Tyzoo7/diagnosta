@@ -55,7 +55,7 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
             }
 
             var letter = drive.Name.TrimEnd('\\');
-            var (kind, busType, model) = Try(() => Storage.Describe(letter), (DriveKind.Unknown, null, null));
+            var (kind, busType, model, diskNumber) = Try(() => Storage.Describe(letter), (DriveKind.Unknown, null, null, null));
 
             drives.Add(new VolumeInfo(
                 Letter: letter,
@@ -65,7 +65,8 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
                 IsSystemDrive: string.Equals(drive.Name, systemRoot, StringComparison.OrdinalIgnoreCase),
                 Kind: kind,
                 BusType: busType,
-                Model: model));
+                Model: model,
+                DiskNumber: diskNumber));
         }
 
         return drives;

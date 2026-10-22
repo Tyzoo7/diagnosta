@@ -31,6 +31,14 @@ public class CliParserTests
     }
 
     [Theory]
+    [InlineData("-f")]
+    [InlineData("--full")]
+    public void FullFlag_RequestsTheFullCheckWithoutMenu(string flag)
+    {
+        Assert.Equal(new CliOptions(CliCommand.Run, null, FullCheck: true), CliParser.Parse([flag]).Options);
+    }
+
+    [Theory]
     [InlineData("--version", "--help")]
     [InlineData("--help", "--version")]
     public void HelpWinsOverVersion_RegardlessOfOrder(string first, string second)
