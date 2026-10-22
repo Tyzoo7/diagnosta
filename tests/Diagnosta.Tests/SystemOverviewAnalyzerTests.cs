@@ -304,6 +304,52 @@ public class SystemOverviewAnalyzerTests
         Assert.Contains("chrome", culprit.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(45_000u, null)]       // 90 %: fine
+    [InlineData(35_000u, "Info")]     // 70 %: worn
+    [InlineData(25_000u, "Warning")]  // 50 %: replace
+    public void BatteryWear_IsReported(uint full, string? expected)
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { Battery = new BatteryInfo(true, DesignedCapacity: 50_000, FullChargeCapacity: full) };
+
+        var finding = Analyze(pc).SingleOrDefault(f => f.Area == CheckArea.Battery);
+
+        Assert.Equal(expected, finding?.Severity.ToString());
+    }
+
+    [Fact]
+    public void NoNetwork_IsWarnedAbout()
+    {
+        var finding = Assert.Single(Analyze(FakeSystemInfoSource.HealthyPc with { Network = [] }));
+
+        Assert.Equal(CheckArea.Network, finding.Area);
+        Assert.Equal(Severity.Warning, finding.Severity);
+    }
+
+    [Fact]
+    public void MissingRouterAddress_IsWarnedAbout()
+    {
+        var adapter = new NetworkAdapterInfo("Realtek PCIe GbE", NetworkKind.Ethernet, 1_000_000_000, ["169.254.3.4"], null, []);
+
+        var finding = Assert.Single(Analyze(FakeSystemInfoSource.HealthyPc with { Network = [adapter] }));
+
+        Assert.Contains("Realtek PCIe GbE", finding.Message, StringComparison.Ordinal);
+        Assert.Contains("169.254", finding.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Ethernet", 100_000_000L, true)]
+    [InlineData("Ethernet", 1_000_000_000L, false)]
+    [InlineData("WiFi", 54_000_000L, false)] // Wi-Fi speeds vary; no cable to blame
+    public void SlowCable_IsPointedOut(string kind, long speed, bool expectTip)
+    {
+        var adapter = new NetworkAdapterInfo("Adapter", Enum.Parse<NetworkKind>(kind), speed, ["192.168.0.5"], "192.168.0.1", []);
+
+        var tip = Analyze(FakeSystemInfoSource.HealthyPc with { Network = [adapter] }).SingleOrDefault();
+
+        Assert.Equal(expectTip, tip is not null);
+    }
+
     [Fact]
     public void EmptyOrUnknownDriveSize_DoesNotWarn()
     {

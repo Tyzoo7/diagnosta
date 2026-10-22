@@ -41,6 +41,11 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
             new ProcessUsage("System", 1, GB / 8, null),
         ],
         RestartPending: false,
+        Battery: new BatteryInfo(Present: true, ChargePercent: 81, PluggedIn: true, DesignedCapacity: 50_000, FullChargeCapacity: 46_000, CycleCount: 120, Chemistry: "Li-Ion"),
+        Network:
+        [
+            new NetworkAdapterInfo("Intel(R) Wi-Fi 6 AX201 160MHz", NetworkKind.WiFi, 866_700_000, ["192.168.1.23"], "192.168.1.1", ["192.168.1.1"]),
+        ],
         Windows: new WindowsInfo("Windows 11", "Pro", "24H2", Build: 26100, UpdateRevision: 2314),
         Uptime: TimeSpan.FromHours(5.5),
         FastStartupEnabled: false);
@@ -56,6 +61,8 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         StartupApps: null,
         Processes: null,
         RestartPending: null,
+        Battery: null,
+        Network: null,
         Windows: null,
         Uptime: TimeSpan.Zero,
         FastStartupEnabled: null);

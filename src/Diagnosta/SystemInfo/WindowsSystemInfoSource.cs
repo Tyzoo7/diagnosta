@@ -56,6 +56,8 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
         StartupApps: Try(WindowsStartupApps.Read, null),
         Processes: processes,
         RestartPending: Try(ReadRestartPending, null),
+        Battery: Try(Battery.Read, null),
+        Network: Try(NetworkAdapters.Read, null),
         Windows: Try(ReadWindows, null),
         // Counts since the last real boot, including sleep, hibernation and Fast Startup.
         Uptime: TimeSpan.FromMilliseconds(Environment.TickCount64),

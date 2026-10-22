@@ -30,6 +30,15 @@ internal static class SystemOverviewAnalyzer
     /// <summary>From this many enabled startup apps on, sign-in gets noticeably slower.</summary>
     public const int ManyStartupApps = 10;
 
+    /// <summary>Below this share of its original capacity a battery is clearly worn.</summary>
+    public const double BatteryWornHealth = 0.8;
+
+    /// <summary>Below this, a replacement is worth it.</summary>
+    public const double BatteryReplaceHealth = 0.6;
+
+    /// <summary>A cable link at or below this speed usually means a bad cable or an old port.</summary>
+    public const long SlowEthernetBitsPerSecond = 100_000_000;
+
     public const double DriveNearlyFullFraction = 0.9;
 
     /// <summary>Below this, Windows updates and temp files start to run out of room.</summary>
@@ -122,6 +131,39 @@ internal static class SystemOverviewAnalyzer
                 case DiskHealth.Warning:
                     findings.Add(new Finding(Severity.Warning, CheckArea.Drives, Format(Strings.FindingDiskWarning, name)));
                     break;
+            }
+        }
+
+        if (overview.Battery?.Health is { } health)
+        {
+            if (health < BatteryReplaceHealth)
+            {
+                findings.Add(new Finding(Severity.Warning, CheckArea.Battery, Format(Strings.FindingBatteryReplace, Formatting.Percent(health))));
+            }
+            else if (health < BatteryWornHealth)
+            {
+                findings.Add(new Finding(Severity.Info, CheckArea.Battery, Format(Strings.FindingBatteryWorn, Formatting.Percent(health))));
+            }
+        }
+
+        if (overview.Network is { } network)
+        {
+            if (network.Count == 0)
+            {
+                findings.Add(new Finding(Severity.Warning, CheckArea.Network, Strings.FindingNoNetwork));
+            }
+
+            foreach (var adapter in network)
+            {
+                if (adapter.HasSelfAssignedAddress)
+                {
+                    findings.Add(new Finding(Severity.Warning, CheckArea.Network, Format(Strings.FindingNoDhcp, adapter.Description)));
+                }
+
+                if (adapter is { Kind: NetworkKind.Ethernet, SpeedBitsPerSecond: <= SlowEthernetBitsPerSecond and var speed })
+                {
+                    findings.Add(new Finding(Severity.Info, CheckArea.Network, Format(Strings.FindingSlowEthernet, Formatting.BitRate(speed))));
+                }
             }
         }
 

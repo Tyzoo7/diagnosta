@@ -186,6 +186,75 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Laufwerke</value>
   </data>
+  <data name="SectionBattery" xml:space="preserve">
+    <value>Akku</value>
+  </data>
+  <data name="SectionNetwork" xml:space="preserve">
+    <value>Netzwerk</value>
+  </data>
+  <data name="BatteryNone" xml:space="preserve">
+    <value>Kein Akku: Das ist ein Desktop-PC.</value>
+  </data>
+  <data name="BatteryCharge" xml:space="preserve">
+    <value>Ladestand</value>
+  </data>
+  <data name="BatteryPluggedIn" xml:space="preserve">
+    <value>am Netzteil</value>
+  </data>
+  <data name="BatteryOnBattery" xml:space="preserve">
+    <value>im Akkubetrieb</value>
+  </data>
+  <data name="BatteryHealth" xml:space="preserve">
+    <value>Zustand</value>
+  </data>
+  <data name="BatteryHealthValue" xml:space="preserve">
+    <value>{0} der ursprünglichen Kapazität</value>
+  </data>
+  <data name="BatteryCapacity" xml:space="preserve">
+    <value>{0} von ursprünglich {1}</value>
+  </data>
+  <data name="BatteryCycles" xml:space="preserve">
+    <value>{0} Ladezyklen</value>
+  </data>
+  <data name="NetworkNone" xml:space="preserve">
+    <value>Keine aktive Netzwerkverbindung.</value>
+  </data>
+  <data name="NetworkWiFi" xml:space="preserve">
+    <value>WLAN</value>
+  </data>
+  <data name="NetworkEthernet" xml:space="preserve">
+    <value>LAN-Kabel</value>
+  </data>
+  <data name="NetworkOther" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="NetworkConnected" xml:space="preserve">
+    <value>Verbunden</value>
+  </data>
+  <data name="NetworkIp" xml:space="preserve">
+    <value>IP {0}</value>
+  </data>
+  <data name="NetworkRouter" xml:space="preserve">
+    <value>Router {0}</value>
+  </data>
+  <data name="NetworkDns" xml:space="preserve">
+    <value>DNS {0}</value>
+  </data>
+  <data name="FindingBatteryWorn" xml:space="preserve">
+    <value>Der Akku hat noch {0} seiner ursprünglichen Kapazität. Das ist normaler Verschleiß: Er hält nur etwas kürzer als neu.</value>
+  </data>
+  <data name="FindingBatteryReplace" xml:space="preserve">
+    <value>Der Akku hat nur noch {0} seiner ursprünglichen Kapazität. Ein Austausch lohnt sich.</value>
+  </data>
+  <data name="FindingNoNetwork" xml:space="preserve">
+    <value>Keine Netzwerkverbindung aktiv. Prüfe WLAN oder Kabel.</value>
+  </data>
+  <data name="FindingNoDhcp" xml:space="preserve">
+    <value>{0} hat keine Adresse vom Router bekommen (169.254.x.x). Ein Neustart von Router oder PC behebt das meistens.</value>
+  </data>
+  <data name="FindingSlowEthernet" xml:space="preserve">
+    <value>Das Netzwerkkabel ist nur mit {0} verbunden. Meist steckt ein defektes Kabel oder ein alter Anschluss dahinter.</value>
+  </data>
   <data name="SectionStartup" xml:space="preserve">
     <value>Autostart-Programme</value>
   </data>

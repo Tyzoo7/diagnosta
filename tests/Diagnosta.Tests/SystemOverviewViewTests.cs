@@ -179,6 +179,36 @@ public class SystemOverviewViewTests
     }
 
     [Fact]
+    public void Battery_ShowsChargeConditionAndCapacity()
+    {
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc, CheckArea.Battery, "de");
+
+        Assert.Contains("81 % · am Netzteil", output, StringComparison.Ordinal);
+        Assert.Contains("92 % der ursprünglichen Kapazität", output, StringComparison.Ordinal);
+        Assert.Contains("46,0 Wh von ursprünglich 50,0 Wh · 120 Ladezyklen · Li-Ion", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DesktopPc_SaysItHasNoBattery_WhenAskedDirectly_ButHidesThePanelInTheFullCheck()
+    {
+        var desktop = FakeSystemInfoSource.HealthyPc with { Battery = BatteryInfo.None };
+
+        Assert.Contains("this is a desktop PC", RenderArea(desktop, CheckArea.Battery), StringComparison.Ordinal);
+        Assert.DoesNotContain("Battery", Render(desktop), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Network_ShowsAdapterSpeedAndAddresses()
+    {
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc, CheckArea.Network, "de");
+
+        Assert.Contains("WLAN", output, StringComparison.Ordinal);
+        Assert.Contains("Intel(R) Wi-Fi 6 AX201 160MHz", output, StringComparison.Ordinal);
+        Assert.Contains("Verbunden · 867 Mbit/s", output, StringComparison.Ordinal);
+        Assert.Contains("IP 192.168.1.23 · Router 192.168.1.1 · DNS 192.168.1.1", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PendingRestart_IsShownInTheWindowsArea()
     {
         var output = RenderArea(FakeSystemInfoSource.HealthyPc with { RestartPending = true }, CheckArea.Windows);

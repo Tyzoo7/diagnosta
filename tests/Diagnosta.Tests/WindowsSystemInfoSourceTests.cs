@@ -104,6 +104,17 @@ public class WindowsSystemInfoSourceTests
     }
 
     [Fact]
+    public void Battery_AndNetwork_AreRead()
+    {
+        var pc = ReadRealMachine();
+
+        // CI machines have no battery; that must come back as "not present", not as a failure.
+        Assert.NotNull(pc.Battery);
+        Assert.NotNull(pc.Network);
+        Assert.NotEmpty(pc.Network); // the runner is online, otherwise it could not run this test
+    }
+
+    [Fact]
     public void Uptime_IsPositive()
     {
         Assert.True(ReadRealMachine().Uptime > TimeSpan.Zero);

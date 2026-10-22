@@ -47,6 +47,46 @@ internal enum DriveKind
     Hdd,
 }
 
+/// <summary>
+/// The laptop battery. <paramref name="Present"/> is false on desktops. Capacities are in mWh.
+/// </summary>
+internal sealed record BatteryInfo(
+    bool Present,
+    int? ChargePercent = null,
+    bool? PluggedIn = null,
+    uint? DesignedCapacity = null,
+    uint? FullChargeCapacity = null,
+    uint? CycleCount = null,
+    string? Chemistry = null)
+{
+    public static BatteryInfo None { get; } = new(Present: false);
+
+    /// <summary>Capacity left compared to new, 0–1. Brand-new batteries can exceed their design; that counts as 100 %.</summary>
+    public double? Health => DesignedCapacity is > 0 && FullChargeCapacity is > 0
+        ? Math.Min(1, (double)FullChargeCapacity.Value / DesignedCapacity.Value)
+        : null;
+}
+
+internal enum NetworkKind
+{
+    Other,
+    Ethernet,
+    WiFi,
+}
+
+/// <summary>A connected network adapter. The MAC address is deliberately left out: it identifies the device.</summary>
+internal sealed record NetworkAdapterInfo(
+    string Description,
+    NetworkKind Kind,
+    long? SpeedBitsPerSecond,
+    IReadOnlyList<string> IPv4Addresses,
+    string? Gateway,
+    IReadOnlyList<string> DnsServers)
+{
+    /// <summary>169.254.x.x: Windows made up an address because no router (DHCP) answered.</summary>
+    public bool HasSelfAssignedAddress => IPv4Addresses.Any(a => a.StartsWith("169.254.", StringComparison.Ordinal));
+}
+
 /// <summary>Where an autostart entry comes from.</summary>
 internal enum StartupScope
 {
@@ -114,6 +154,8 @@ internal sealed record SystemOverview(
     IReadOnlyList<StartupEntry>? StartupApps,
     IReadOnlyList<ProcessUsage>? Processes,
     bool? RestartPending,
+    BatteryInfo? Battery,
+    IReadOnlyList<NetworkAdapterInfo>? Network,
     WindowsInfo? Windows,
     TimeSpan Uptime,
     bool? FastStartupEnabled);
