@@ -24,9 +24,6 @@
   <data name="VersionLabel" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="WelcomeComingSoon" xml:space="preserve">
-    <value>No checks available yet – the first ones arrive in the next version.</value>
-  </data>
   <data name="HintHelp" xml:space="preserve">
     <value>Run with --help to see all options.</value>
   </data>
@@ -56,5 +53,83 @@
   </data>
   <data name="ErrorUnsupportedLanguage" xml:space="preserve">
     <value>Unsupported language: {0}. Available: de, en</value>
+  </data>
+  <data name="WindowsOnly" xml:space="preserve">
+    <value>Diagnosta runs on Windows 10 and 11 only.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="OverviewTitle" xml:space="preserve">
+    <value>System overview</value>
+  </data>
+  <data name="LabelWindows" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="LabelCpu" xml:space="preserve">
+    <value>Processor</value>
+  </data>
+  <data name="LabelMemory" xml:space="preserve">
+    <value>Memory (RAM)</value>
+  </data>
+  <data name="LabelGpu" xml:space="preserve">
+    <value>Graphics</value>
+  </data>
+  <data name="LabelUptime" xml:space="preserve">
+    <value>Running since last restart</value>
+  </data>
+  <data name="WindowsBuild" xml:space="preserve">
+    <value>Build {0}</value>
+  </data>
+  <data name="CpuCoresThreads" xml:space="preserve">
+    <value>{0} cores, {1} threads</value>
+  </data>
+  <data name="CpuThreads" xml:space="preserve">
+    <value>{0} threads</value>
+  </data>
+  <data name="MemoryUsage" xml:space="preserve">
+    <value>{0} of {1} in use ({2})</value>
+  </data>
+  <data name="MemoryUsed" xml:space="preserve">
+    <value>Used</value>
+  </data>
+  <data name="MemoryFree" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="GpuNone" xml:space="preserve">
+    <value>No graphics card detected</value>
+  </data>
+  <data name="GpuMemory" xml:space="preserve">
+    <value>{0} dedicated memory</value>
+  </data>
+  <data name="UptimeHoursMinutes" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="UptimeOneDay" xml:space="preserve">
+    <value>1 day, {1} h</value>
+  </data>
+  <data name="UptimeDays" xml:space="preserve">
+    <value>{0} days, {1} h</value>
+  </data>
+  <data name="FindingsTitle" xml:space="preserve">
+    <value>Findings</value>
+  </data>
+  <data name="FindingAllGood" xml:space="preserve">
+    <value>Nothing unusual found.</value>
+  </data>
+  <data name="FindingWindows10" xml:space="preserve">
+    <value>Windows 10 has not received regular security updates since 14 October 2025. Upgrade to Windows 11 if your PC supports it.</value>
+  </data>
+  <data name="FindingLongUptime" xml:space="preserve">
+    <value>This PC has not been restarted for {0} days. A restart finishes pending updates and often fixes slowness.</value>
+  </data>
+  <data name="FindingFastStartup" xml:space="preserve">
+    <value>Fast Startup is on, so "Shut down" does not really restart Windows. Use "Restart" instead.</value>
+  </data>
+  <data name="FindingLowMemory" xml:space="preserve">
+    <value>This PC has only {0} of memory. Windows 11 runs noticeably better with 8 GB or more.</value>
+  </data>
+  <data name="FindingMemoryNearlyFull" xml:space="preserve">
+    <value>Memory is {0} full. Close programs you don't need, or check in Task Manager what is using it.</value>
   </data>
 </root>

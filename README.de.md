@@ -9,8 +9,8 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.1).** Das Fundament steht: Sprachunterstützung,
-> Kommandozeile, Tests und CI. **PC-Prüfungen gibt es noch keine.** Sie kommen Schritt für Schritt dazu.
+> **Status: frühe Entwicklung (v0.2).** Die erste Prüfung, der Systemüberblick, ist fertig.
+> Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
 
@@ -26,7 +26,7 @@ Genau dafür ist Diagnosta gebaut:
 
 ## Geplant für v1.0
 
-- [ ] Systemüberblick: CPU, RAM, Grafikkarte, Windows-Version, Laufzeit
+- [x] Systemüberblick: CPU, RAM, Grafikkarte, Windows-Version, Laufzeit, mit verständlichen Hinweisen
 - [ ] Laufwerksgesundheit (SMART)
 - [ ] Speicheranalyse: größte Ordner und Dateien
 - [ ] Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
@@ -40,6 +40,30 @@ Genau dafür ist Diagnosta gebaut:
 - **Kein Netzwerkzugriff, keine Telemetrie.** Diagnosta sendet nie Daten irgendwohin.
 - **Admin-Rechte nur, wenn nötig.** Wenn sie nötig sind, erklärt das Tool, warum.
 - **Wenige Abhängigkeiten, feste Versionen.** So bleibt die Angriffsfläche klein.
+
+## Was es heute zeigt
+
+```text
+                                      Systemüberblick
+╭─────────────────────────────┬──────────────────────────────────────────────────────────╮
+│ Windows                     │ Windows 11 Pro 24H2 (Build 26100.2314)                   │
+│ Prozessor                   │ AMD Ryzen 5 7600X 6-Core Processor (6 Kerne, 12 Threads) │
+│ Arbeitsspeicher (RAM)       │ 12 GB von 32 GB belegt (38 %)                            │
+│                             │ ███████████░░░░░░░░░░░░░░░░░░░                           │
+│ Grafik                      │ NVIDIA GeForce RTX 4070 (12 GB eigener Speicher)         │
+│ Läuft seit letztem Neustart │ 23 Tage, 4 Std.                                          │
+╰─────────────────────────────┴──────────────────────────────────────────────────────────╯
+
+Hinweise
+ ! Dieser PC wurde seit 23 Tagen nicht neu gestartet. Ein Neustart schließt ausstehende
+   Updates ab und behebt oft Langsamkeit.
+ i Schnellstart ist aktiv, deshalb startet „Herunterfahren“ Windows nicht wirklich neu.
+   Nutze stattdessen „Neu starten“.
+```
+
+Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI).
+Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher über 4 GB wird
+korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
 
 ## Verwendung
 
@@ -65,7 +89,9 @@ dotnet run --project src/Diagnosta   # Programm starten
 
 ```text
 src/Diagnosta/            Das Programm
+  Checks/                 Macht aus Rohwerten verständliche Hinweise
   Cli/                    Auswertung der Kommandozeile
+  SystemInfo/             Liest Systeminformationen aus Windows
   Localization/           Übersetzungen (Strings.resx = Englisch, Strings.de.resx = Deutsch)
   Ui/                     Ausgabe in der Konsole
 tests/Diagnosta.Tests/    Automatische Tests (xUnit)

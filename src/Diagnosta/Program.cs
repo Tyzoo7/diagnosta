@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Diagnosta.Cli;
 using Diagnosta.Localization;
+using Diagnosta.SystemInfo;
 using Diagnosta.Ui;
 using Spectre.Console;
 
@@ -26,4 +27,6 @@ foreach (var c in new[] { console, errorConsole })
     }
 }
 
-return new App(console, errorConsole).Run(parseResult);
+ISystemInfoSource? systemInfo = OperatingSystem.IsWindows() ? new WindowsSystemInfoSource() : null;
+
+return new App(console, errorConsole, systemInfo).Run(parseResult);

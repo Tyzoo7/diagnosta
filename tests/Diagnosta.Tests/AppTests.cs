@@ -1,5 +1,5 @@
-using System.Globalization;
 using Diagnosta.Cli;
+using Diagnosta.SystemInfo;
 using Diagnosta.Ui;
 using Spectre.Console;
 
@@ -13,7 +13,7 @@ public class AppTests
 
         public StringWriter Error { get; } = new();
 
-        public App CreateApp() => new(Create(Out), Create(Error));
+        public App CreateApp(ISystemInfoSource? systemInfo) => new(Create(Out), Create(Error), systemInfo);
 
         private static IAnsiConsole Create(TextWriter writer)
         {
@@ -28,20 +28,15 @@ public class AppTests
         }
     }
 
-    private static (int ExitCode, string Out, string Error) Run(string culture, params string[] args)
+    private static (int ExitCode, string Out, string Error) Run(string culture, params string[] args) =>
+        RunOn(new FakeSystemInfoSource(FakeSystemInfoSource.HealthyPc), culture, args);
+
+    private static (int ExitCode, string Out, string Error) RunOn(ISystemInfoSource? systemInfo, string culture, params string[] args)
     {
-        var previous = CultureInfo.CurrentUICulture;
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
-        try
-        {
-            var captured = new Captured();
-            var exitCode = captured.CreateApp().Run(CliParser.Parse(args));
-            return (exitCode, captured.Out.ToString(), captured.Error.ToString());
-        }
-        finally
-        {
-            CultureInfo.CurrentUICulture = previous;
-        }
+        using var _ = new CultureScope(culture);
+        var captured = new Captured();
+        var exitCode = captured.CreateApp(systemInfo).Run(CliParser.Parse(args));
+        return (exitCode, captured.Out.ToString(), captured.Error.ToString());
     }
 
     [Fact]
@@ -76,13 +71,32 @@ public class AppTests
     }
 
     [Fact]
-    public void Welcome_ShowsVersionAndLanguage()
+    public void Start_ShowsVersionLanguageAndOverview()
     {
         var (exitCode, output, _) = Run("de");
 
         Assert.Equal(App.ExitSuccess, exitCode);
         Assert.Contains(App.Version, output, StringComparison.Ordinal);
         Assert.Contains("Deutsch", output, StringComparison.Ordinal);
+        Assert.Contains("Systemüberblick", output, StringComparison.Ordinal);
+        Assert.Contains("NVIDIA GeForce RTX 4070", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Start_OnUnsupportedPlatform_ExplainsAndFails()
+    {
+        var (exitCode, output, error) = RunOn(null, "en");
+
+        Assert.Equal(App.ExitUnsupportedPlatform, exitCode);
+        Assert.Empty(output);
+        Assert.Contains("Windows 10 and 11", error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void HelpAndVersion_WorkWithoutWindows()
+    {
+        Assert.Equal(App.ExitSuccess, RunOn(null, "en", "--help").ExitCode);
+        Assert.Equal(App.ExitSuccess, RunOn(null, "en", "--version").ExitCode);
     }
 
     [Fact]

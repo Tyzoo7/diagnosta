@@ -9,8 +9,8 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.1).** The foundation is in place: language support,
-> command line, tests and CI. There are **no PC checks yet**. They are being added one by one.
+> **Status: early development (v0.2).** The first check, the system overview, is in place.
+> More checks are being added one by one.
 
 ## Why another diagnostics tool?
 
@@ -25,7 +25,7 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 
 ## Planned for v1.0
 
-- [ ] System overview: CPU, RAM, GPU, Windows version, uptime
+- [x] System overview: CPU, RAM, GPU, Windows version, uptime, with plain-language hints
 - [ ] Drive health (SMART)
 - [ ] Storage analysis: largest folders and files
 - [ ] Cleanup suggestions: temp files, update cache, recycle bin
@@ -39,6 +39,29 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 - **No network access, no telemetry.** Diagnosta never sends data anywhere.
 - **Admin rights only when needed.** When they are needed, the tool explains why.
 - **Few dependencies, pinned versions.** This keeps the attack surface small.
+
+## What it shows today
+
+```text
+                                     System overview
+╭─────────────────────────────┬──────────────────────────────────────────────────────────╮
+│ Windows                     │ Windows 11 Pro 24H2 (Build 26100.2314)                   │
+│ Processor                   │ AMD Ryzen 5 7600X 6-Core Processor (6 cores, 12 threads) │
+│ Memory (RAM)                │ 12 GB of 32 GB in use (38 %)                             │
+│                             │ ███████████░░░░░░░░░░░░░░░░░░░                           │
+│ Graphics                    │ NVIDIA GeForce RTX 4070 (12 GB dedicated memory)         │
+│ Running since last restart  │ 23 days, 4 h                                             │
+╰─────────────────────────────┴──────────────────────────────────────────────────────────╯
+
+Findings
+ ! This PC has not been restarted for 23 days. A restart finishes pending updates and
+   often fixes slowness.
+ i Fast Startup is on, so "Shut down" does not really restart Windows. Use "Restart" instead.
+```
+
+Everything is read with built-in Windows interfaces (registry, kernel32, DXGI).
+No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown
+correctly, unlike tools based on WMI.
 
 ## Usage
 
@@ -64,7 +87,9 @@ dotnet run --project src/Diagnosta   # start the app
 
 ```text
 src/Diagnosta/            The application
+  Checks/                 Turns raw values into plain-language findings
   Cli/                    Command-line parsing
+  SystemInfo/             Reads system information from Windows
   Localization/           Translations (Strings.resx = English, Strings.de.resx = German)
   Ui/                     Console output
 tests/Diagnosta.Tests/    Automated tests (xUnit)
