@@ -8,31 +8,52 @@ using Spectre.Console.Rendering;
 namespace Diagnosta.Ui;
 
 /// <summary>
-/// Renders the overview as stacked sections of equal width: a one-line status first
-/// (the answer to "is my PC okay?"), then the details, then what to do about them.
+/// Renders checks as stacked panels of equal width: a one-line status first (the answer to
+/// "is my PC okay?"), then the details, then what to do about them. Each item has a main
+/// line and a quieter detail line, with a blank line between items so it reads easily.
 /// </summary>
 internal static class SystemOverviewView
 {
+    public static IReadOnlyList<CheckArea> AllAreas { get; } = Enum.GetValues<CheckArea>();
+
     private const int MaxWidth = 96;
     private const int BarWidth = 30;
 
-    public static void Render(IAnsiConsole console, SystemOverview overview, IReadOnlyList<Finding> findings)
-    {
-        var width = Math.Min(console.Profile.Width, MaxWidth);
+    /// <summary>Secondary text: readable on black and on PowerShell's blue background.</summary>
+    private static readonly Color Quiet = Color.Grey70;
 
-        var status = StatusPanel(findings);
+    public static void Render(IAnsiConsole console, SystemOverview overview, IReadOnlyList<Finding> findings) =>
+        Render(console, overview, findings, AllAreas);
+
+    public static void Render(IAnsiConsole console, SystemOverview overview, IReadOnlyList<Finding> findings, IReadOnlyCollection<CheckArea> areas)
+    {
+        ArgumentNullException.ThrowIfNull(console);
+        ArgumentNullException.ThrowIfNull(overview);
+
+        var width = Math.Min(console.Profile.Width, MaxWidth);
+        var relevant = findings.Where(f => areas.Contains(f.Area)).ToList();
+
+        var status = StatusPanel(relevant);
         status.Width = width;
         console.Write(status);
-        console.Write(Section(Strings.SectionSystem, SystemGrid(overview), width));
-        console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives, overview.PhysicalDisks), width));
 
-        if (findings.Count > 0)
+        if (SystemGrid(overview, areas) is { } system)
         {
-            console.Write(Section(Strings.FindingsTitle, FindingsGrid(findings), width));
+            console.Write(Section(Strings.SectionSystem, system, width));
+        }
+
+        if (areas.Contains(CheckArea.Drives))
+        {
+            console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives, overview.PhysicalDisks), width));
+        }
+
+        if (relevant.Count > 0)
+        {
+            console.Write(Section(Strings.FindingsTitle, FindingsGrid(relevant), width));
         }
     }
 
-    private static Panel StatusPanel(IReadOnlyList<Finding> findings)
+    private static Panel StatusPanel(List<Finding> findings)
     {
         var text = findings.Count switch
         {
@@ -57,22 +78,56 @@ internal static class SystemOverviewView
             Header = new PanelHeader($"[bold deepskyblue1] {Markup.Escape(title)} [/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Grey),
-            Padding = new Padding(1, 0, 1, 0),
+            Padding = new Padding(1, 1, 1, 0),
             Width = width,
         };
 
-    private static Grid SystemGrid(SystemOverview overview)
+    private static Grid? SystemGrid(SystemOverview overview, IReadOnlyCollection<CheckArea> areas)
     {
-        var grid = new Grid()
-            .AddColumn(new GridColumn().NoWrap().PadRight(2))
-            .AddColumn();
+        var grid = NewTwoColumnGrid();
+        var rows = 0;
 
-        AddRow(grid, Strings.LabelWindows, Text(WindowsText(overview.Windows)));
-        AddRow(grid, Strings.LabelCpu, Text(CpuText(overview.Cpu)));
-        AddRow(grid, Strings.LabelMemory, MemoryCell(overview.Memory));
-        AddRow(grid, Strings.LabelGpu, Text(GpuText(overview.Gpus)));
-        AddRow(grid, Strings.LabelUptime, Text(Formatting.Uptime(overview.Uptime)));
-        return grid;
+        void Item(string label, string? main, IRenderable? detail = null)
+        {
+            if (rows++ > 0)
+            {
+                grid.AddEmptyRow();
+            }
+
+            // Graphics has no single main line, only its per-GPU lines (passed as detail).
+            IRenderable cell = (main, detail) switch
+            {
+                (null, not null) => detail,
+                (_, null) => Text(main),
+                _ => new Rows(Text(main), detail),
+            };
+            grid.AddRow(Label(label), cell);
+        }
+
+        if (areas.Contains(CheckArea.Windows))
+        {
+            var (name, detail) = WindowsText(overview.Windows);
+            Item(Strings.LabelWindows, name, QuietText(detail));
+            Item(Strings.LabelUptime, Formatting.Uptime(overview.Uptime));
+        }
+
+        if (areas.Contains(CheckArea.Processor))
+        {
+            Item(Strings.LabelCpu, overview.Cpu.Name ?? Strings.Unknown, QuietText(CpuDetail(overview.Cpu)));
+        }
+
+        if (areas.Contains(CheckArea.Memory))
+        {
+            var (main, bar) = MemoryLines(overview.Memory);
+            Item(Strings.LabelMemory, main, bar);
+        }
+
+        if (areas.Contains(CheckArea.Graphics))
+        {
+            Item(Strings.LabelGpu, null, GpuLines(overview.Gpus));
+        }
+
+        return rows == 0 ? null : grid;
     }
 
     private static IRenderable DrivesGrid(IReadOnlyList<VolumeInfo>? drives, IReadOnlyList<PhysicalDiskInfo>? disks)
@@ -82,70 +137,66 @@ internal static class SystemOverviewView
             return Text(drives is null ? Strings.Unknown : Strings.DrivesNone);
         }
 
-        var grid = new Grid()
-            .AddColumn(new GridColumn().NoWrap().PadRight(2))
-            .AddColumn();
-
-        AddVolumes(grid, drives);
-        AddHealth(grid, disks);
-        return grid;
-    }
-
-    /// <summary>One line per physical disk; the label only on the first, like a sub-heading.</summary>
-    private static void AddHealth(Grid grid, IReadOnlyList<PhysicalDiskInfo>? disks)
-    {
-        if (disks is null || disks.Count == 0)
+        var grid = NewTwoColumnGrid();
+        for (var i = 0; i < drives.Count; i++)
         {
-            grid.AddRow(new Markup($"[bold]{Markup.Escape(Strings.LabelHealth)}[/]"), Text(Strings.Unknown));
-            return;
-        }
-
-        for (var i = 0; i < disks.Count; i++)
-        {
-            var disk = disks[i];
-            var (symbol, color, text) = disk.Health switch
+            if (i > 0)
             {
-                DiskHealth.Healthy => ("✓", "green", Strings.HealthHealthy),
-                DiskHealth.Warning => ("!", "yellow", Strings.HealthWarning),
-                DiskHealth.Unhealthy => ("✗", "red", Strings.HealthUnhealthy),
-                _ => ("?", "grey", Strings.Unknown),
-            };
+                grid.AddEmptyRow();
+            }
 
-            grid.AddRow(
-                new Markup(i == 0 ? $"[bold]{Markup.Escape(Strings.LabelHealth)}[/]" : string.Empty),
-                new Markup($"{Markup.Escape(disk.Name ?? Strings.DiskUnnamed)}  [{color} bold]{symbol} {Markup.Escape(text)}[/]"));
-        }
-    }
-
-    private static void AddVolumes(Grid grid, IReadOnlyList<VolumeInfo> drives)
-    {
-
-        foreach (var drive in drives)
-        {
+            var drive = drives[i];
+            var disk = disks?.FirstOrDefault(d => d.DiskNumber is not null && d.DiskNumber == drive.DiskNumber);
             var details = string.Join(" · ", new[] { drive.IsSystemDrive ? "Windows" : drive.Label, DeviceText(drive) }
                 .Where(p => !string.IsNullOrEmpty(p)));
             var free = string.Format(CultureInfo.CurrentCulture, Strings.DriveFree, Formatting.Bytes(drive.FreeBytes), Formatting.Bytes(drive.TotalBytes), Formatting.Percent(drive.UsedFraction));
             var color = SystemOverviewAnalyzer.IsNearlyFull(drive) ? Color.Red : drive.UsedFraction >= 0.75 ? Color.Yellow : Color.Green;
 
+            var firstLine = Markup.Escape(details.Length == 0 ? Strings.Unknown : details)
+                + (disk is null ? string.Empty : "  " + HealthBadge(disk.Health));
+
             grid.AddRow(
-                new Markup($"[bold]{Markup.Escape(drive.Letter)}[/]"),
+                Label(drive.Letter),
                 new Rows(
-                    Text(details.Length == 0 ? Strings.Unknown : details),
+                    new Markup(firstLine),
                     new Columns(UsageBar(drive.UsedFraction, color), Text(free)).Collapse()));
         }
+
+        // Disks without a drive letter of their own (or whose volumes span several disks).
+        var listed = drives.Select(d => d.DiskNumber).Where(n => n is not null).ToHashSet();
+        foreach (var disk in disks?.Where(d => d.DiskNumber is null || !listed.Contains(d.DiskNumber)) ?? [])
+        {
+            grid.AddEmptyRow();
+            grid.AddRow(Label(Strings.LabelHealth), new Markup($"{Markup.Escape(disk.Name ?? Strings.DiskUnnamed)}  {HealthBadge(disk.Health)}"));
+        }
+
+        return grid;
     }
 
-    private static Grid FindingsGrid(IReadOnlyList<Finding> findings)
+    private static string HealthBadge(DiskHealth health) => health switch
+    {
+        DiskHealth.Healthy => $"[green bold]✓ {Markup.Escape(Strings.HealthHealthy)}[/]",
+        DiskHealth.Warning => $"[yellow bold]! {Markup.Escape(Strings.HealthWarning)}[/]",
+        DiskHealth.Unhealthy => $"[red bold]✗ {Markup.Escape(Strings.HealthUnhealthy)}[/]",
+        _ => $"[{Quiet.ToMarkup()}]? {Markup.Escape(Strings.Unknown)}[/]",
+    };
+
+    private static Grid FindingsGrid(List<Finding> findings)
     {
         // A grid keeps wrapped lines aligned under the text instead of under the symbol.
         var grid = new Grid()
             .AddColumn(new GridColumn().NoWrap().PadRight(1))
             .AddColumn();
 
-        foreach (var finding in findings)
+        for (var i = 0; i < findings.Count; i++)
         {
-            var (symbol, color) = Look(finding.Severity);
-            grid.AddRow(new Markup($"[{color.ToMarkup()} bold]{symbol}[/]"), Text(finding.Message));
+            if (i > 0)
+            {
+                grid.AddEmptyRow();
+            }
+
+            var (symbol, color) = Look(findings[i].Severity);
+            grid.AddRow(new Markup($"[{color.ToMarkup()} bold]{symbol}[/]"), Text(findings[i].Message));
         }
 
         return grid;
@@ -158,10 +209,17 @@ internal static class SystemOverviewView
         _ => ("i", Color.DeepSkyBlue1),
     };
 
-    private static void AddRow(Grid grid, string label, IRenderable value) =>
-        grid.AddRow(new Markup($"[bold]{Markup.Escape(label)}[/]"), value);
+    private static Grid NewTwoColumnGrid() =>
+        new Grid()
+            .AddColumn(new GridColumn().NoWrap().PadRight(3))
+            .AddColumn();
+
+    private static Markup Label(string label) => new($"[bold]{Markup.Escape(label)}[/]");
 
     private static Markup Text(string? text) => new(Markup.Escape(text ?? Strings.Unknown));
+
+    private static Markup? QuietText(string? text) =>
+        string.IsNullOrEmpty(text) ? null : new Markup($"[{Quiet.ToMarkup()}]{Markup.Escape(text)}[/]");
 
     private static BreakdownChart UsageBar(double usedFraction, Color color) =>
         new BreakdownChart()
@@ -170,33 +228,36 @@ internal static class SystemOverviewView
             .AddItem(Strings.MemoryUsed, Math.Round(usedFraction * 100, 1), color)
             .AddItem(Strings.MemoryFree, Math.Round((1 - usedFraction) * 100, 1), Color.Grey23);
 
-    private static string? WindowsText(WindowsInfo? windows)
+    /// <summary>"Windows 11 Pro" and "Version 24H2 · Build 26100.2314".</summary>
+    private static (string? Name, string? Detail) WindowsText(WindowsInfo? windows)
     {
         if (windows is null)
         {
-            return null;
+            return (null, null);
         }
 
-        var name = string.Join(' ', new[] { windows.Name, windows.Edition, windows.DisplayVersion }.Where(p => !string.IsNullOrEmpty(p)));
+        var name = string.Join(' ', new[] { windows.Name, windows.Edition }.Where(p => !string.IsNullOrEmpty(p)));
         var build = windows.UpdateRevision is { } ubr
             ? $"{windows.Build}.{ubr}"
             : windows.Build.ToString(CultureInfo.InvariantCulture);
-        return $"{name} ({string.Format(CultureInfo.CurrentCulture, Strings.WindowsBuild, build)})";
+        var parts = new[]
+        {
+            windows.DisplayVersion is null ? null : string.Format(CultureInfo.CurrentCulture, Strings.WindowsVersion, windows.DisplayVersion),
+            string.Format(CultureInfo.CurrentCulture, Strings.WindowsBuild, build),
+        };
+        return (name, string.Join(" · ", parts.Where(p => p is not null)));
     }
 
-    private static string CpuText(CpuInfo cpu)
-    {
-        var counts = cpu.PhysicalCores is { } cores
+    private static string CpuDetail(CpuInfo cpu) =>
+        cpu.PhysicalCores is { } cores
             ? string.Format(CultureInfo.CurrentCulture, Strings.CpuCoresThreads, cores, cpu.LogicalProcessors)
             : string.Format(CultureInfo.CurrentCulture, Strings.CpuThreads, cpu.LogicalProcessors);
-        return $"{cpu.Name ?? Strings.Unknown} ({counts})";
-    }
 
-    private static IRenderable MemoryCell(MemoryInfo? memory)
+    private static (string Main, IRenderable? Bar) MemoryLines(MemoryInfo? memory)
     {
         if (memory is null || memory.TotalBytes == 0)
         {
-            return Text(Strings.Unknown);
+            return (Strings.Unknown, null);
         }
 
         var text = string.Format(
@@ -207,28 +268,28 @@ internal static class SystemOverviewView
             Formatting.Percent(memory.UsedFraction));
 
         var color = memory.UsedFraction >= SystemOverviewAnalyzer.MemoryNearlyFullFraction ? Color.Yellow : Color.Green;
-        return new Rows(Text(text), UsageBar(memory.UsedFraction, color));
+        return (text, UsageBar(memory.UsedFraction, color));
     }
 
-    private static string GpuText(IReadOnlyList<GpuInfo>? gpus)
+    /// <summary>One main line per GPU with a quiet detail line below it.</summary>
+    private static IRenderable GpuLines(IReadOnlyList<GpuInfo>? gpus)
     {
-        if (gpus is null)
+        if (gpus is null || gpus.Count == 0)
         {
-            return Strings.Unknown;
+            return Text(gpus is null ? Strings.Unknown : Strings.GpuNone);
         }
 
-        if (gpus.Count == 0)
-        {
-            return Strings.GpuNone;
-        }
-
-        return string.Join(Environment.NewLine, gpus.Select(gpu =>
+        var lines = new List<IRenderable>();
+        foreach (var gpu in gpus)
         {
             var detail = gpu.IsIntegrated
                 ? Strings.GpuIntegrated
                 : string.Format(CultureInfo.CurrentCulture, Strings.GpuMemory, Formatting.Bytes(gpu.DedicatedMemoryBytes!.Value));
-            return $"{gpu.Name} ({detail})";
-        }));
+            lines.Add(Text(gpu.Name));
+            lines.Add(QuietText(detail)!);
+        }
+
+        return new Rows(lines);
     }
 
     /// <summary>E.g. "NVMe SSD · Samsung SSD 980 PRO 1TB".</summary>

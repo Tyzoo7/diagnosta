@@ -14,6 +14,7 @@ namespace Diagnosta.SystemInfo.Native;
 internal static unsafe partial class Storage
 {
     private const uint IoctlStorageQueryProperty = 0x002D1400;
+    private const uint IoctlStorageGetDeviceNumber = 0x002D1080;
     private const int StorageDeviceProperty = 0;
     private const int StorageDeviceSeekPenaltyProperty = 7;
     private const int PropertyStandardQuery = 0;
@@ -21,17 +22,33 @@ internal static unsafe partial class Storage
     private const uint FileShareReadWrite = 0x1 | 0x2;
     private const uint OpenExisting = 3;
 
-    /// <summary>Type, bus and model of the device behind e.g. "C:", or nulls if Windows won't say.</summary>
-    public static (DriveKind Kind, string? BusType, string? Model) Describe(string driveLetter)
+    /// <summary>
+    /// Type, bus, model and disk number of the device behind e.g. "C:", or nulls if Windows
+    /// won't say.
+    /// </summary>
+    public static (DriveKind Kind, string? BusType, string? Model, int? DiskNumber) Describe(string driveLetter)
     {
         using var volume = CreateFileW($@"\\.\{driveLetter}", 0, FileShareReadWrite, IntPtr.Zero, OpenExisting, 0, IntPtr.Zero);
         if (volume.IsInvalid)
         {
-            return (DriveKind.Unknown, null, null);
+            return (DriveKind.Unknown, null, null, null);
         }
 
         var (busType, model) = QueryDevice(volume);
-        return (QueryKind(volume), busType, model);
+        return (QueryKind(volume), busType, model, QueryDiskNumber(volume));
+    }
+
+    /// <summary>
+    /// Which physical disk the volume lives on. Fails for volumes spanning several disks
+    /// (e.g. Storage Spaces), which is fine: we then just can't show its health.
+    /// </summary>
+    private static int? QueryDiskNumber(SafeFileHandle volume)
+    {
+        DeviceNumber result;
+        return DeviceIoControl(volume, IoctlStorageGetDeviceNumber, null, 0, &result, (uint)sizeof(DeviceNumber), out var returned, IntPtr.Zero)
+            && returned >= (uint)sizeof(DeviceNumber)
+                ? (int)result.Number
+                : null;
     }
 
     /// <summary>
@@ -94,6 +111,15 @@ internal static unsafe partial class Storage
         17 => "NVMe",
         _ => null,
     };
+
+    /// <summary>STORAGE_DEVICE_NUMBER.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DeviceNumber
+    {
+        public uint DeviceType;
+        public uint Number;
+        public uint PartitionNumber;
+    }
 
     /// <summary>STORAGE_PROPERTY_QUERY.</summary>
     [StructLayout(LayoutKind.Sequential)]

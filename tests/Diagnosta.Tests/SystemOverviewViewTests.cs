@@ -22,10 +22,13 @@ public class SystemOverviewViewTests
     {
         var output = Render(FakeSystemInfoSource.HealthyPc);
 
-        Assert.Contains("Windows 11 Pro 24H2 (Build 26100.2314)", output, StringComparison.Ordinal);
-        Assert.Contains("AMD Ryzen 5 7600X 6-Core Processor (6 cores, 12 threads)", output, StringComparison.Ordinal);
+        Assert.Contains("Windows 11 Pro", output, StringComparison.Ordinal);
+        Assert.Contains("Version 24H2 · Build 26100.2314", output, StringComparison.Ordinal);
+        Assert.Contains("AMD Ryzen 5 7600X 6-Core Processor", output, StringComparison.Ordinal);
+        Assert.Contains("6 cores, 12 threads", output, StringComparison.Ordinal);
         Assert.Contains("12 GB of 32 GB in use (38 %)", output, StringComparison.Ordinal);
-        Assert.Contains("NVIDIA GeForce RTX 4070 (12 GB dedicated memory)", output, StringComparison.Ordinal);
+        Assert.Contains("NVIDIA GeForce RTX 4070", output, StringComparison.Ordinal);
+        Assert.Contains("Dedicated graphics card with 12 GB of its own memory", output, StringComparison.Ordinal);
         Assert.Contains("5 h 30 min", output, StringComparison.Ordinal);
         Assert.Contains("All good", output, StringComparison.Ordinal);
         Assert.DoesNotContain("Findings", output, StringComparison.Ordinal);
@@ -46,7 +49,6 @@ public class SystemOverviewViewTests
     {
         var output = Render(FakeSystemInfoSource.HealthyPc, "de");
 
-        Assert.Contains("Zustand", output, StringComparison.Ordinal);
         Assert.True(output.Contains("Samsung SSD 980 PRO 1TB  ✓ Gesund", StringComparison.Ordinal), output);
         Assert.Contains("WDC WD20EZRZ-00Z5HB0  ✓ Gesund", output, StringComparison.Ordinal);
     }
@@ -63,12 +65,40 @@ public class SystemOverviewViewTests
     }
 
     [Fact]
-    public void UnknownDiskHealth_SaysUnknown()
+    public void HealthIsShownOnTheDriveLine_WhenTheDiskIsKnown()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc);
+        var cLine = output.Split('\n').Single(l => l.Contains("C:", StringComparison.Ordinal));
+
+        Assert.Contains("Samsung SSD 980 PRO 1TB  ✓ Healthy", cLine, StringComparison.Ordinal);
+        Assert.DoesNotContain("Health ", output, StringComparison.Ordinal); // no separate health line needed
+    }
+
+    [Fact]
+    public void UnknownDiskHealth_ShowsNoBadge()
     {
         var output = Render(FakeSystemInfoSource.HealthyPc with { PhysicalDisks = null });
 
-        Assert.Contains("Health", output, StringComparison.Ordinal);
-        Assert.Contains("unknown", output, StringComparison.Ordinal);
+        Assert.Contains("Samsung SSD 980 PRO 1TB", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("Healthy", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OnlyTheChosenArea_IsShown_WithItsOwnFindings()
+    {
+        // 30 days uptime is a Windows finding; it must not appear on the drives screen.
+        var pc = FakeSystemInfoSource.HealthyPc with { Uptime = TimeSpan.FromDays(30) };
+        using var _ = new CultureScope("en");
+        var writer = new StringWriter();
+        var console = TestConsole.Create(writer, width: 140);
+
+        SystemOverviewView.Render(console, pc, SystemOverviewAnalyzer.Analyze(pc), [CheckArea.Drives]);
+        var output = writer.ToString();
+
+        Assert.Contains("Drives", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("Processor", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("restarted", output, StringComparison.Ordinal);
+        Assert.Contains("All good", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -91,7 +121,8 @@ public class SystemOverviewViewTests
 
         var output = Render(pc, "de");
 
-        Assert.Contains("Intel(R) UHD Graphics (integriert, nutzt den Arbeitsspeicher mit)", output, StringComparison.Ordinal);
+        Assert.Contains("Intel(R) UHD Graphics", output, StringComparison.Ordinal);
+        Assert.Contains("Integrierte Grafik, nutzt den Arbeitsspeicher mit", output, StringComparison.Ordinal);
         Assert.DoesNotContain("128 MB", output, StringComparison.Ordinal);
     }
 
@@ -100,7 +131,7 @@ public class SystemOverviewViewTests
     [InlineData(3, "3 findings")]
     public void Status_CountsFindings(int count, string expected)
     {
-        var findings = Enumerable.Range(0, count).Select(i => new Finding(Severity.Info, $"Tip {i}")).ToList();
+        var findings = Enumerable.Range(0, count).Select(i => new Finding(Severity.Info, CheckArea.Windows, $"Tip {i}")).ToList();
         using var _ = new CultureScope("en");
         var writer = new StringWriter();
         var console = TestConsole.Create(writer);
@@ -112,11 +143,19 @@ public class SystemOverviewViewTests
     }
 
     [Fact]
+    public void RecognisedGraphics_DoesNotAlsoSayUnknown()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc);
+
+        Assert.DoesNotContain("unknown", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SilentPc_ShowsUnknownInsteadOfCrashing()
     {
         var output = Render(FakeSystemInfoSource.SilentPc, "de");
 
-        Assert.Contains("unbekannt (4 Threads)", output, StringComparison.Ordinal);
+        Assert.Contains("4 Threads", output, StringComparison.Ordinal);
         Assert.True(output.Split("unbekannt").Length - 1 >= 5, "CPU, Windows, RAM, GPU and drives should all say 'unbekannt'");
     }
 
@@ -138,8 +177,9 @@ public class SystemOverviewViewTests
 
         var output = Render(pc);
 
-        Assert.Contains("Intel(R) UHD Graphics (integrated, shares system memory)", output, StringComparison.Ordinal);
-        Assert.Contains("RTX 3050 Laptop GPU (4 GB dedicated memory)", output, StringComparison.Ordinal);
+        Assert.Contains("Integrated graphics, shares system memory", output, StringComparison.Ordinal);
+        Assert.Contains("RTX 3050 Laptop GPU", output, StringComparison.Ordinal);
+        Assert.Contains("Dedicated graphics card with 4 GB of its own memory", output, StringComparison.Ordinal);
     }
 
     [Fact]

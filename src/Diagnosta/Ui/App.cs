@@ -13,14 +13,23 @@ namespace Diagnosta.Ui;
 /// instead of writing to the real console so tests can capture what is shown.
 /// Errors go to a separate console (stderr) so scripts can tell them apart from output.
 /// <paramref name="systemInfo"/> is null on platforms Diagnosta does not support.
+/// <paramref name="interactive"/> is null when there is no one to answer a menu, e.g. when
+/// output is redirected or the run happens in CI.
 /// </summary>
-internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISystemInfoSource? systemInfo)
+internal sealed class App(
+    IAnsiConsole console,
+    IAnsiConsole errorConsole,
+    ISystemInfoSource? systemInfo,
+    InteractiveOptions? interactive = null)
 {
     public const int ExitSuccess = 0;
     public const int ExitUsageError = 2;
     public const int ExitUnsupportedPlatform = 3;
 
     private const string AuthorUrl = "https://github.com/Tyzoo7";
+
+    /// <summary>Secondary text, readable on black and on PowerShell's blue background.</summary>
+    private const string Quiet = "grey70";
 
     public static string Version { get; } = ReadVersion();
 
@@ -43,13 +52,63 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
                 console.WriteLine($"Diagnosta {Version}");
                 break;
             default:
-                return ShowOverview();
+                return Start(parseResult.Options);
         }
 
         return ExitSuccess;
     }
 
-    private int ShowOverview()
+    /// <summary>Big logo, tagline, version and author: the first screen.</summary>
+    public void WriteHeader()
+    {
+        console.Write(new FigletText("Diagnosta").Color(Color.DeepSkyBlue1));
+        console.MarkupLine($"[bold]{Markup.Escape(Strings.AppTagline)}[/]");
+        console.MarkupLine($"[{Quiet}]{VersionLine()}[/]");
+        console.WriteLine();
+    }
+
+    /// <summary>One line above each result, so the result itself fits on screen.</summary>
+    public void WriteCompactHeader()
+    {
+        console.Write(new Rule($"[bold deepskyblue1]Diagnosta[/] [{Quiet}]{VersionLine()}[/]").LeftJustified().RuleStyle(Color.Grey));
+        console.WriteLine();
+    }
+
+    public void WriteMenuHint()
+    {
+        console.WriteLine();
+        console.MarkupLine($"[{Quiet}]{Markup.Escape(Strings.MenuHint)}[/]");
+    }
+
+    /// <summary>Reads the PC fresh and shows the given parts of it.</summary>
+    public void WriteCheck(IReadOnlyCollection<CheckArea> areas)
+    {
+        var overview = systemInfo!.Read();
+        SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview), areas);
+    }
+
+    public void WriteAbout()
+    {
+        var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(3)).AddColumn();
+        grid.AddRow($"[bold]{Markup.Escape(Strings.AboutVersion)}[/]", Markup.Escape(Version));
+        grid.AddEmptyRow();
+        grid.AddRow($"[bold]{Markup.Escape(Strings.AboutAuthor)}[/]", $"[link={AuthorUrl}]Tyzoo7[/] [{Quiet}]({AuthorUrl})[/]");
+        grid.AddEmptyRow();
+        grid.AddRow($"[bold]{Markup.Escape(Strings.AboutPrivacy)}[/]", Markup.Escape(Strings.AboutPrivacyText));
+        grid.AddEmptyRow();
+        grid.AddRow($"[bold]{Markup.Escape(Strings.AboutLicense)}[/]", "MIT");
+
+        console.Write(new Panel(grid)
+        {
+            Header = new PanelHeader($"[bold deepskyblue1] {Markup.Escape(Strings.MenuAbout)} [/]"),
+            Border = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.Grey),
+            Padding = new Padding(1, 1, 1, 0),
+            Width = Math.Min(console.Profile.Width, 96),
+        });
+    }
+
+    private int Start(CliOptions options)
     {
         if (systemInfo is null)
         {
@@ -57,18 +116,23 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
             return ExitUnsupportedPlatform;
         }
 
-        console.Write(new FigletText("Diagnosta").Color(Color.DeepSkyBlue1));
-        console.MarkupLine($"[bold]{Markup.Escape(Strings.AppTagline)}[/]");
-        var author = string.Format(CultureInfo.CurrentCulture, Strings.ByAuthor, $"[link={AuthorUrl}]Tyzoo7[/]");
-        console.MarkupLine($"[grey]v{Markup.Escape(Version)} · {author} · {Markup.Escape(Strings.LanguageName)}[/]");
-        console.WriteLine();
+        if (interactive is not null && !options.FullCheck)
+        {
+            // An explicit --lang means the language is already chosen.
+            return new InteractiveSession(this, interactive.Prompt, interactive.ClearScreen).Run(askLanguage: options.Language is null);
+        }
 
-        var overview = systemInfo.Read();
-        SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview));
-
+        WriteHeader();
+        WriteCheck(SystemOverviewView.AllAreas);
         console.WriteLine();
-        console.MarkupLine($"[grey]{Markup.Escape(Strings.HintHelp)}[/]");
+        console.MarkupLine($"[{Quiet}]{Markup.Escape(Strings.HintHelp)}[/]");
         return ExitSuccess;
+    }
+
+    private static string VersionLine()
+    {
+        var author = string.Format(CultureInfo.CurrentCulture, Strings.ByAuthor, $"[link={AuthorUrl}]Tyzoo7[/]");
+        return $"v{Markup.Escape(Version)} · {author} · {Markup.Escape(Strings.LanguageName)}";
     }
 
     private void ShowHelp()
@@ -81,6 +145,7 @@ internal sealed class App(IAnsiConsole console, IAnsiConsole errorConsole, ISyst
         var options = new Table().NoBorder().HideHeaders().AddColumn(string.Empty).AddColumn(string.Empty);
         options.AddRow("[deepskyblue1]-h, --help[/]", Markup.Escape(Strings.HelpOptionHelp));
         options.AddRow("[deepskyblue1]-v, --version[/]", Markup.Escape(Strings.HelpOptionVersion));
+        options.AddRow("[deepskyblue1]-f, --full[/]", Markup.Escape(Strings.HelpOptionFull));
         options.AddRow("[deepskyblue1]--lang <de|en>[/]", Markup.Escape(Strings.HelpOptionLanguage));
 
         console.MarkupLine($"[bold]{Markup.Escape(Strings.HelpOptions)}:[/]");

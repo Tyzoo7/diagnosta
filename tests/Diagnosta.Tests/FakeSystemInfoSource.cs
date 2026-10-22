@@ -13,13 +13,13 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         Gpus: [new GpuInfo("NVIDIA GeForce RTX 4070", 12 * GB)],
         Drives:
         [
-            new VolumeInfo("C:", null, 931 * GB, 412 * GB, IsSystemDrive: true, DriveKind.Ssd, "NVMe", "Samsung SSD 980 PRO 1TB"),
-            new VolumeInfo("D:", "Games", 1863 * GB, 900 * GB, IsSystemDrive: false, DriveKind.Hdd, "SATA", "WDC WD20EZRZ-00Z5HB0"),
+            new VolumeInfo("C:", null, 931 * GB, 412 * GB, IsSystemDrive: true, DriveKind.Ssd, "NVMe", "Samsung SSD 980 PRO 1TB", DiskNumber: 0),
+            new VolumeInfo("D:", "Games", 1863 * GB, 900 * GB, IsSystemDrive: false, DriveKind.Hdd, "SATA", "WDC WD20EZRZ-00Z5HB0", DiskNumber: 1),
         ],
         PhysicalDisks:
         [
-            new PhysicalDiskInfo("Samsung SSD 980 PRO 1TB", DriveKind.Ssd, DiskHealth.Healthy),
-            new PhysicalDiskInfo("WDC WD20EZRZ-00Z5HB0", DriveKind.Hdd, DiskHealth.Healthy),
+            new PhysicalDiskInfo("Samsung SSD 980 PRO 1TB", DriveKind.Ssd, DiskHealth.Healthy, DiskNumber: 0),
+            new PhysicalDiskInfo("WDC WD20EZRZ-00Z5HB0", DriveKind.Hdd, DiskHealth.Healthy, DiskNumber: 1),
         ],
         Windows: new WindowsInfo("Windows 11", "Pro", "24H2", Build: 26100, UpdateRevision: 2314),
         Uptime: TimeSpan.FromHours(5.5),

@@ -95,8 +95,13 @@ vor einem Release auszuprobieren.
 
 ## Verwendung
 
+Ohne Optionen im Terminal (oder per Doppelklick) gestartet, fragt Diagnosta nach der Sprache
+und zeigt dann ein Menü: Mit den Pfeiltasten den kompletten PC-Check oder einen einzelnen
+Bereich wählen und mit Enter bestätigen.
+
 ```text
-diagnosta                 Diagnosta starten
+diagnosta                 Menü öffnen
+diagnosta --full          Kompletten PC-Check sofort ausgeben (auch bei umgeleiteter Ausgabe)
 diagnosta --lang de       Auf Deutsch (de) oder Englisch (en) starten
 diagnosta --help          Alle Optionen anzeigen
 diagnosta --version       Version anzeigen

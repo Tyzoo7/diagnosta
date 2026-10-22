@@ -43,8 +43,11 @@ internal enum DiskHealth
     Unhealthy,
 }
 
-/// <summary>A physical disk (not a drive letter), e.g. the SSD itself.</summary>
-internal sealed record PhysicalDiskInfo(string? Name, DriveKind Kind, DiskHealth Health);
+/// <summary>
+/// A physical disk (not a drive letter), e.g. the SSD itself. <paramref name="DiskNumber"/>
+/// is Windows' disk number ("Disk 0" in Disk Management) and links it to its drive letters.
+/// </summary>
+internal sealed record PhysicalDiskInfo(string? Name, DriveKind Kind, DiskHealth Health, int? DiskNumber = null);
 
 /// <summary>A drive letter such as C:. The serial number is deliberately never read (privacy).</summary>
 internal sealed record VolumeInfo(
@@ -55,7 +58,8 @@ internal sealed record VolumeInfo(
     bool IsSystemDrive,
     DriveKind Kind,
     string? BusType,
-    string? Model)
+    string? Model,
+    int? DiskNumber = null)
 {
     public double UsedFraction => TotalBytes == 0 ? 0 : (double)(TotalBytes - Math.Min(FreeBytes, TotalBytes)) / TotalBytes;
 }

@@ -93,8 +93,13 @@ changes before they are released.
 
 ## Usage
 
+Started without options in a terminal (or by double-click), Diagnosta asks for the language
+and then shows a menu: pick the full PC check or a single area with the arrow keys and
+confirm with Enter.
+
 ```text
-diagnosta                 Start Diagnosta
+diagnosta                 Open the menu
+diagnosta --full          Print the full PC check right away (also used when output is redirected)
 diagnosta --lang de       Start in German (de) or English (en)
 diagnosta --help          Show all options
 diagnosta --version       Show the version

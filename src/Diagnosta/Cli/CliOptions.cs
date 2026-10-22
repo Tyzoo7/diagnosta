@@ -16,7 +16,8 @@ internal enum CliErrorKind
     UnsupportedLanguage,
 }
 
-internal sealed record CliOptions(CliCommand Command, string? Language);
+/// <param name="FullCheck">Print the full PC check straight away instead of showing the menu.</param>
+internal sealed record CliOptions(CliCommand Command, string? Language, bool FullCheck = false);
 
 internal sealed record CliError(CliErrorKind Kind, string Argument);
 

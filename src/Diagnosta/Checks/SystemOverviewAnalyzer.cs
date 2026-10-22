@@ -33,17 +33,17 @@ internal static class SystemOverviewAnalyzer
 
         if (overview.Windows?.IsWindows10 == true)
         {
-            findings.Add(new Finding(Severity.Warning, Strings.FindingWindows10));
+            findings.Add(new Finding(Severity.Warning, CheckArea.Windows, Strings.FindingWindows10));
         }
 
         if (overview.Uptime >= LongUptime)
         {
-            findings.Add(new Finding(Severity.Warning, Format(Strings.FindingLongUptime, (int)overview.Uptime.TotalDays)));
+            findings.Add(new Finding(Severity.Warning, CheckArea.Windows, Format(Strings.FindingLongUptime, (int)overview.Uptime.TotalDays)));
 
             // Explains the classic "but I shut it down every evening!" situation.
             if (overview.FastStartupEnabled == true)
             {
-                findings.Add(new Finding(Severity.Info, Strings.FindingFastStartup));
+                findings.Add(new Finding(Severity.Info, CheckArea.Windows, Strings.FindingFastStartup));
             }
         }
 
@@ -51,12 +51,12 @@ internal static class SystemOverviewAnalyzer
         {
             if (memory.TotalBytes > 0 && memory.TotalBytes < LowMemoryBytes)
             {
-                findings.Add(new Finding(Severity.Info, Format(Strings.FindingLowMemory, Formatting.Bytes(memory.TotalBytes))));
+                findings.Add(new Finding(Severity.Info, CheckArea.Memory, Format(Strings.FindingLowMemory, Formatting.Bytes(memory.TotalBytes))));
             }
 
             if (memory.UsedFraction >= MemoryNearlyFullFraction)
             {
-                findings.Add(new Finding(Severity.Warning, Format(Strings.FindingMemoryNearlyFull, Formatting.Percent(memory.UsedFraction))));
+                findings.Add(new Finding(Severity.Warning, CheckArea.Memory, Format(Strings.FindingMemoryNearlyFull, Formatting.Percent(memory.UsedFraction))));
             }
         }
 
@@ -66,10 +66,10 @@ internal static class SystemOverviewAnalyzer
             switch (disk.Health)
             {
                 case DiskHealth.Unhealthy:
-                    findings.Add(new Finding(Severity.Critical, Format(Strings.FindingDiskUnhealthy, name)));
+                    findings.Add(new Finding(Severity.Critical, CheckArea.Drives, Format(Strings.FindingDiskUnhealthy, name)));
                     break;
                 case DiskHealth.Warning:
-                    findings.Add(new Finding(Severity.Warning, Format(Strings.FindingDiskWarning, name)));
+                    findings.Add(new Finding(Severity.Warning, CheckArea.Drives, Format(Strings.FindingDiskWarning, name)));
                     break;
             }
         }
@@ -79,7 +79,7 @@ internal static class SystemOverviewAnalyzer
             if (IsNearlyFull(drive))
             {
                 var template = drive.IsSystemDrive ? Strings.FindingSystemDriveNearlyFull : Strings.FindingDriveNearlyFull;
-                findings.Add(new Finding(Severity.Warning, Format(template, drive.Letter, Formatting.Bytes(drive.FreeBytes))));
+                findings.Add(new Finding(Severity.Warning, CheckArea.Drives, Format(template, drive.Letter, Formatting.Bytes(drive.FreeBytes))));
             }
         }
 
