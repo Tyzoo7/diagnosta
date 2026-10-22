@@ -60,6 +60,20 @@ internal static class SystemOverviewAnalyzer
             }
         }
 
+        foreach (var disk in overview.PhysicalDisks ?? [])
+        {
+            var name = disk.Name ?? Strings.DiskUnnamed;
+            switch (disk.Health)
+            {
+                case DiskHealth.Unhealthy:
+                    findings.Add(new Finding(Severity.Critical, Format(Strings.FindingDiskUnhealthy, name)));
+                    break;
+                case DiskHealth.Warning:
+                    findings.Add(new Finding(Severity.Warning, Format(Strings.FindingDiskWarning, name)));
+                    break;
+            }
+        }
+
         foreach (var drive in overview.Drives ?? [])
         {
             if (IsNearlyFull(drive))

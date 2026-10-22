@@ -48,6 +48,36 @@ public class SystemOverviewViewTests
     }
 
     [Fact]
+    public void DiskHealth_IsShownPerPhysicalDisk()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc, "de");
+
+        Assert.Contains("Zustand", output, StringComparison.Ordinal);
+        Assert.Contains("Samsung SSD 980 PRO 1TB  ✓ Gesund", output, StringComparison.Ordinal);
+        Assert.Contains("WDC WD20EZRZ-00Z5HB0  ✓ Gesund", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailingDisk_IsMarkedAndTurnsTheStatusCritical()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with { PhysicalDisks = [new PhysicalDiskInfo("Old HDD", DriveKind.Hdd, DiskHealth.Unhealthy)] };
+
+        var output = Render(pc);
+
+        Assert.Contains("Old HDD  ✗ Failing", output, StringComparison.Ordinal);
+        Assert.Contains("✗  1 finding", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UnknownDiskHealth_SaysUnknown()
+    {
+        var output = Render(FakeSystemInfoSource.HealthyPc with { PhysicalDisks = null });
+
+        Assert.Contains("Health", output, StringComparison.Ordinal);
+        Assert.Contains("unknown", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DriveWithoutDeviceDetails_StillShowsSpace()
     {
         var pc = FakeSystemInfoSource.HealthyPc with

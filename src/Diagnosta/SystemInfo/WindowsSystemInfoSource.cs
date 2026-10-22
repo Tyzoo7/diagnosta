@@ -24,6 +24,7 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
         Memory: Try(Kernel32.ReadMemory, null),
         Gpus: Try(Dxgi.ReadGpus, null),
         Drives: Try(ReadDrives, null),
+        PhysicalDisks: Try(Wmi.ReadPhysicalDisks, null),
         Windows: Try(ReadWindows, null),
         // Counts since the last real boot, including sleep, hibernation and Fast Startup.
         Uptime: TimeSpan.FromMilliseconds(Environment.TickCount64),

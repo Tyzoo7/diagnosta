@@ -114,6 +114,27 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Drives</value>
   </data>
+  <data name="LabelHealth" xml:space="preserve">
+    <value>Health</value>
+  </data>
+  <data name="HealthHealthy" xml:space="preserve">
+    <value>Healthy</value>
+  </data>
+  <data name="HealthWarning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="HealthUnhealthy" xml:space="preserve">
+    <value>Failing</value>
+  </data>
+  <data name="DiskUnnamed" xml:space="preserve">
+    <value>Unnamed disk</value>
+  </data>
+  <data name="FindingDiskWarning" xml:space="preserve">
+    <value>{0} reports first problems. Back up your important files and keep an eye on this drive.</value>
+  </data>
+  <data name="FindingDiskUnhealthy" xml:space="preserve">
+    <value>{0} is failing or about to fail. Back up your files now and have the drive replaced.</value>
+  </data>
   <data name="StatusAllGood" xml:space="preserve">
     <value>All good – nothing unusual found.</value>
   </data>

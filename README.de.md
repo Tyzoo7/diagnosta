@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.5).** Systemüberblick und Laufwerksübersicht sind fertig.
+> **Status: frühe Entwicklung (v0.6).** Systemüberblick, Laufwerksübersicht und Laufwerkszustand sind fertig.
 > Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
@@ -28,7 +28,7 @@ Genau dafür ist Diagnosta gebaut:
 
 - [x] Systemüberblick: CPU, RAM, Grafikkarte, Windows-Version, Laufzeit, mit verständlichen Hinweisen
 - [x] Laufwerksübersicht: SSD/HDD, Modell, freier Platz, Warnung wenn fast voll
-- [ ] Laufwerksgesundheit (Verschleiß, Fehler)
+- [x] Laufwerkszustand: gesund / Warnung / defekt, wie von Windows gemeldet (ohne Admin-Rechte)
 - [ ] Speicheranalyse: größte Ordner und Dateien
 - [ ] Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
 - [ ] Autostart-Programme
@@ -57,8 +57,9 @@ Genau dafür ist Diagnosta gebaut:
 │ Seit Neustart          23 Tage, 4 Std.                                           │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Laufwerke ──────────────────────────────────────────────────────────────────────╮
-│ C:  Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                                 │
-│     █████████████████░░░░░░░░░░░░░ 412 GB frei von 931 GB (56 % belegt)          │
+│ C:       Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                            │
+│          █████████████████░░░░░░░░░░░░░ 412 GB frei von 931 GB (56 % belegt)     │
+│ Zustand  Samsung SSD 980 PRO 1TB  ✓ Gesund                                       │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Hinweise ───────────────────────────────────────────────────────────────────────╮
 │ ! Dieser PC wurde seit 23 Tagen nicht neu gestartet. Ein Neustart schließt       │
@@ -69,7 +70,7 @@ Genau dafür ist Diagnosta gebaut:
 ```
 
 Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI,
-Speicher-IOCTLs). Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher
+Speicher-IOCTLs, WMI). Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher
 über 4 GB wird korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
 Seriennummern von Laufwerken werden nie ausgelesen.
 

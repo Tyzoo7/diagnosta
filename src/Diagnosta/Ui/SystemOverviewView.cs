@@ -24,7 +24,7 @@ internal static class SystemOverviewView
         status.Width = width;
         console.Write(status);
         console.Write(Section(Strings.SectionSystem, SystemGrid(overview), width));
-        console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives), width));
+        console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives, overview.PhysicalDisks), width));
 
         if (findings.Count > 0)
         {
@@ -34,14 +34,17 @@ internal static class SystemOverviewView
 
     private static Panel StatusPanel(IReadOnlyList<Finding> findings)
     {
-        var hasWarning = findings.Any(f => f.Severity == Severity.Warning);
-        var (symbol, color, text) = findings.Count switch
+        var text = findings.Count switch
         {
-            0 => ("✓", Color.Green, Strings.StatusAllGood),
-            1 => (hasWarning ? "!" : "i", hasWarning ? Color.Yellow : Color.DeepSkyBlue1, Strings.StatusOneFinding),
-            _ => (hasWarning ? "!" : "i", hasWarning ? Color.Yellow : Color.DeepSkyBlue1,
-                string.Format(CultureInfo.CurrentCulture, Strings.StatusFindings, findings.Count)),
+            0 => Strings.StatusAllGood,
+            1 => Strings.StatusOneFinding,
+            _ => string.Format(CultureInfo.CurrentCulture, Strings.StatusFindings, findings.Count),
         };
+
+        // The status takes the look of the most serious finding.
+        var (symbol, color) = findings.Count == 0
+            ? ("✓", Color.Green)
+            : Look(findings.Max(f => f.Severity));
 
         return new Panel(new Markup($"[bold {color.ToMarkup()}]{symbol}  {Markup.Escape(text)}[/]"))
             .RoundedBorder()
@@ -72,7 +75,7 @@ internal static class SystemOverviewView
         return grid;
     }
 
-    private static IRenderable DrivesGrid(IReadOnlyList<VolumeInfo>? drives)
+    private static IRenderable DrivesGrid(IReadOnlyList<VolumeInfo>? drives, IReadOnlyList<PhysicalDiskInfo>? disks)
     {
         if (drives is null || drives.Count == 0)
         {
@@ -82,6 +85,40 @@ internal static class SystemOverviewView
         var grid = new Grid()
             .AddColumn(new GridColumn().NoWrap().PadRight(2))
             .AddColumn();
+
+        AddVolumes(grid, drives);
+        AddHealth(grid, disks);
+        return grid;
+    }
+
+    /// <summary>One line per physical disk; the label only on the first, like a sub-heading.</summary>
+    private static void AddHealth(Grid grid, IReadOnlyList<PhysicalDiskInfo>? disks)
+    {
+        if (disks is null || disks.Count == 0)
+        {
+            grid.AddRow(new Markup($"[bold]{Markup.Escape(Strings.LabelHealth)}[/]"), Text(Strings.Unknown));
+            return;
+        }
+
+        for (var i = 0; i < disks.Count; i++)
+        {
+            var disk = disks[i];
+            var (symbol, color, text) = disk.Health switch
+            {
+                DiskHealth.Healthy => ("✓", "green", Strings.HealthHealthy),
+                DiskHealth.Warning => ("!", "yellow", Strings.HealthWarning),
+                DiskHealth.Unhealthy => ("✗", "red", Strings.HealthUnhealthy),
+                _ => ("?", "grey", Strings.Unknown),
+            };
+
+            grid.AddRow(
+                new Markup(i == 0 ? $"[bold]{Markup.Escape(Strings.LabelHealth)}[/]" : string.Empty),
+                new Markup($"{Markup.Escape(disk.Name ?? Strings.DiskUnnamed)}  [{color} bold]{symbol} {Markup.Escape(text)}[/]"));
+        }
+    }
+
+    private static void AddVolumes(Grid grid, IReadOnlyList<VolumeInfo> drives)
+    {
 
         foreach (var drive in drives)
         {
@@ -96,8 +133,6 @@ internal static class SystemOverviewView
                     Text(details.Length == 0 ? Strings.Unknown : details),
                     new Columns(UsageBar(drive.UsedFraction, color), Text(free)).Collapse()));
         }
-
-        return grid;
     }
 
     private static Grid FindingsGrid(IReadOnlyList<Finding> findings)
@@ -109,12 +144,19 @@ internal static class SystemOverviewView
 
         foreach (var finding in findings)
         {
-            var (symbol, color) = finding.Severity == Severity.Warning ? ("!", "yellow") : ("i", "deepskyblue1");
-            grid.AddRow(new Markup($"[{color} bold]{symbol}[/]"), Text(finding.Message));
+            var (symbol, color) = Look(finding.Severity);
+            grid.AddRow(new Markup($"[{color.ToMarkup()} bold]{symbol}[/]"), Text(finding.Message));
         }
 
         return grid;
     }
+
+    private static (string Symbol, Color Color) Look(Severity severity) => severity switch
+    {
+        Severity.Critical => ("✗", Color.Red),
+        Severity.Warning => ("!", Color.Yellow),
+        _ => ("i", Color.DeepSkyBlue1),
+    };
 
     private static void AddRow(Grid grid, string label, IRenderable value) =>
         grid.AddRow(new Markup($"[bold]{Markup.Escape(label)}[/]"), value);

@@ -30,6 +30,22 @@ internal enum DriveKind
     Hdd,
 }
 
+/// <summary>What Windows' storage service says about a disk (MSFT_PhysicalDisk.HealthStatus).</summary>
+internal enum DiskHealth
+{
+    Unknown,
+    Healthy,
+
+    /// <summary>"May be failing some reads" according to Microsoft: back up soon.</summary>
+    Warning,
+
+    /// <summary>"Failing reads and writes or no longer responding": back up now.</summary>
+    Unhealthy,
+}
+
+/// <summary>A physical disk (not a drive letter), e.g. the SSD itself.</summary>
+internal sealed record PhysicalDiskInfo(string? Name, DriveKind Kind, DiskHealth Health);
+
 /// <summary>A drive letter such as C:. The serial number is deliberately never read (privacy).</summary>
 internal sealed record VolumeInfo(
     string Letter,
@@ -54,6 +70,7 @@ internal sealed record SystemOverview(
     MemoryInfo? Memory,
     IReadOnlyList<GpuInfo>? Gpus,
     IReadOnlyList<VolumeInfo>? Drives,
+    IReadOnlyList<PhysicalDiskInfo>? PhysicalDisks,
     WindowsInfo? Windows,
     TimeSpan Uptime,
     bool? FastStartupEnabled);
