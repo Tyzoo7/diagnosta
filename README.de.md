@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.2).** Die erste Prüfung, der Systemüberblick, ist fertig.
+> **Status: frühe Entwicklung (v0.3).** Die erste Prüfung, der Systemüberblick, ist fertig.
 > Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
@@ -64,6 +64,19 @@ Hinweise
 Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI).
 Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher über 4 GB wird
 korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
+
+## Ausprobieren
+
+Ein offizielles Release gibt es noch nicht. Jeder CI-Lauf baut eine eigenständige
+`Diagnosta.exe` (etwa 14 MB, ohne .NET-Installation lauffähig):
+
+1. Öffne **Actions → CI**, wähle den neuesten grünen Lauf und lade unter *Artifacts*
+   **Diagnosta-win-x64** herunter.
+2. Entpacke die Datei, öffne ein Terminal in diesem Ordner und starte `.\Diagnosta.exe`.
+   Ein Doppelklick funktioniert auch: Das Fenster bleibt offen, bis du eine Taste drückst.
+3. Optional kannst du `Get-FileHash .\Diagnosta.exe` mit dem SHA-256 in der Zusammenfassung des Laufs vergleichen.
+
+Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start eventuell.
 
 ## Verwendung
 

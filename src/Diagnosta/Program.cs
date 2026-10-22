@@ -3,6 +3,7 @@ using System.Text;
 using Diagnosta.Cli;
 using Diagnosta.Localization;
 using Diagnosta.SystemInfo;
+using Diagnosta.SystemInfo.Native;
 using Diagnosta.Ui;
 using Spectre.Console;
 
@@ -29,4 +30,14 @@ foreach (var c in new[] { console, errorConsole })
 
 ISystemInfoSource? systemInfo = OperatingSystem.IsWindows() ? new WindowsSystemInfoSource() : null;
 
-return new App(console, errorConsole, systemInfo).Run(parseResult);
+var exitCode = new App(console, errorConsole, systemInfo).Run(parseResult);
+
+// Started by double-click: keep the window open, or the user never sees the result.
+if (OperatingSystem.IsWindows() && !Console.IsInputRedirected && Kernel32.IsAloneInConsoleWindow())
+{
+    console.WriteLine();
+    console.MarkupLine($"[grey]{Markup.Escape(Strings.PressAnyKeyToExit)}[/]");
+    Console.ReadKey(intercept: true);
+}
+
+return exitCode;

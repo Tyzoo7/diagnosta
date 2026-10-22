@@ -3,13 +3,23 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>Diagnosta</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <!-- Needed for direct calls into Windows (kernel32, DXGI). -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Product>Diagnosta – PC Checker</Product>
     <NeutralLanguage>en</NeutralLanguage>
     <!-- Only ship the languages we actually translate. -->
     <SatelliteResourceLanguages>en;de</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!--
+    Lets the lock file cover the Windows build. The standalone exe is published with
+    "-p:PublishSingleFile=true -p:PublishTrimmed=true" (see ci.yml) instead of setting those
+    here: they pull in an SDK tool package whose version follows the installed .NET patch,
+    which would break the lock file every month.
+  -->
+  <PropertyGroup>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

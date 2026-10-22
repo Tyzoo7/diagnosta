@@ -111,6 +111,9 @@
   <data name="UptimeDays" xml:space="preserve">
     <value>{0} Tage, {1} Std.</value>
   </data>
+  <data name="PressAnyKeyToExit" xml:space="preserve">
+    <value>Drücke eine beliebige Taste zum Beenden…</value>
+  </data>
   <data name="FindingsTitle" xml:space="preserve">
     <value>Hinweise</value>
   </data>
