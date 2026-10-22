@@ -13,14 +13,13 @@
   </PropertyGroup>
 
   <!--
-    Standalone Windows exe: "dotnet publish -r win-x64 -sc".
-    Trimming drops unused parts of .NET (about 75 MB -> 14 MB) and makes the build
-    warn about code that would not survive it.
+    Lets the lock file cover the Windows build. The standalone exe is published with
+    "-p:PublishSingleFile=true -p:PublishTrimmed=true" (see ci.yml) instead of setting those
+    here: they pull in an SDK tool package whose version follows the installed .NET patch,
+    which would break the lock file every month.
   -->
   <PropertyGroup>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

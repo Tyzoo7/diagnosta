@@ -31,10 +31,12 @@ jobs:
         with:
           persist-credentials: false
 
+      # Always the newest .NET 10 patch: the exe bundles this runtime, so it must
+      # include the latest security fixes (the preinstalled SDK can lag a month behind).
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          global-json-file: global.json
+          dotnet-version: 10.0.x
 
       - name: Restore (locked versions only)
         run: dotnet restore --locked-mode
@@ -45,8 +47,15 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
+      - name: Show .NET version used
+        run: dotnet --info
+
+      # Trimming drops unused parts of .NET (~75 MB -> ~14 MB). Trim warnings fail the
+      # build because TreatWarningsAsErrors is on.
       - name: Publish standalone exe
-        run: dotnet publish src/Diagnosta --configuration Release --runtime win-x64 --self-contained -p:RestoreLockedMode=true --output publish
+        run: >-
+          dotnet publish src/Diagnosta --configuration Release --runtime win-x64 --self-contained
+          -p:PublishSingleFile=true -p:PublishTrimmed=true --output publish
 
       - name: Smoke test (the exact exe users download)
         shell: pwsh
