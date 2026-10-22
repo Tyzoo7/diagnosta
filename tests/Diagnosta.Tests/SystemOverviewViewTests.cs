@@ -11,13 +11,7 @@ public class SystemOverviewViewTests
     {
         using var _ = new CultureScope(culture);
         var writer = new StringWriter();
-        var console = AnsiConsole.Create(new AnsiConsoleSettings
-        {
-            Ansi = AnsiSupport.No,
-            ColorSystem = ColorSystemSupport.NoColors,
-            Out = new AnsiConsoleOutput(writer),
-        });
-        console.Profile.Width = 140;
+        var console = TestConsole.Create(writer, width: 140);
 
         SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview));
         return writer.ToString();
@@ -109,8 +103,7 @@ public class SystemOverviewViewTests
         var findings = Enumerable.Range(0, count).Select(i => new Finding(Severity.Info, $"Tip {i}")).ToList();
         using var _ = new CultureScope("en");
         var writer = new StringWriter();
-        var console = AnsiConsole.Create(new AnsiConsoleSettings { Ansi = AnsiSupport.No, ColorSystem = ColorSystemSupport.NoColors, Out = new AnsiConsoleOutput(writer) });
-        console.Profile.Width = 120;
+        var console = TestConsole.Create(writer);
 
         SystemOverviewView.Render(console, FakeSystemInfoSource.HealthyPc, findings);
 

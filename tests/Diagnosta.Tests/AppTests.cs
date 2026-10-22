@@ -15,17 +15,7 @@ public class AppTests
 
         public App CreateApp(ISystemInfoSource? systemInfo) => new(Create(Out), Create(Error), systemInfo);
 
-        private static IAnsiConsole Create(TextWriter writer)
-        {
-            var console = AnsiConsole.Create(new AnsiConsoleSettings
-            {
-                Ansi = AnsiSupport.No,
-                ColorSystem = ColorSystemSupport.NoColors,
-                Out = new AnsiConsoleOutput(writer),
-            });
-            console.Profile.Width = 120;
-            return console;
-        }
+        private static IAnsiConsole Create(TextWriter writer) => TestConsole.Create(writer);
     }
 
     private static (int ExitCode, string Out, string Error) Run(string culture, params string[] args) =>
