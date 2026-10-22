@@ -13,6 +13,8 @@ internal enum MenuAction
     Memory,
     Graphics,
     Drives,
+    StartupApps,
+    Processes,
     About,
     ChangeLanguage,
     Quit,
@@ -75,6 +77,8 @@ internal sealed class InteractiveSession(App app, IChoicePrompt prompt, Action c
         MenuAction.Memory => [CheckArea.Memory],
         MenuAction.Graphics => [CheckArea.Graphics],
         MenuAction.Drives => [CheckArea.Drives],
+        MenuAction.StartupApps => [CheckArea.Startup],
+        MenuAction.Processes => [CheckArea.Processes],
         _ => SystemOverviewView.AllAreas,
     };
 
@@ -96,6 +100,8 @@ internal sealed class InteractiveSession(App app, IChoicePrompt prompt, Action c
         MenuAction.Memory => Strings.LabelMemory,
         MenuAction.Graphics => Strings.LabelGpu,
         MenuAction.Drives => Strings.SectionDrives,
+        MenuAction.StartupApps => Strings.SectionStartup,
+        MenuAction.Processes => Strings.SectionProcesses,
         MenuAction.About => Strings.MenuAbout,
         MenuAction.ChangeLanguage => Strings.MenuChangeLanguage,
         _ => Strings.MenuQuit,

@@ -18,6 +18,7 @@ internal static class SystemOverviewView
 
     private const int MaxWidth = 96;
     private const int BarWidth = 30;
+    private const int TopProcesses = 5;
 
     /// <summary>Secondary text: readable on black and on PowerShell's blue background.</summary>
     private static readonly Color Quiet = Color.Grey70;
@@ -47,11 +48,94 @@ internal static class SystemOverviewView
             console.Write(Section(Strings.SectionDrives, DrivesGrid(overview.Drives, overview.PhysicalDisks), width));
         }
 
+        if (areas.Contains(CheckArea.Startup))
+        {
+            console.Write(Section(Strings.SectionStartup, StartupGrid(overview.StartupApps), width));
+        }
+
+        if (areas.Contains(CheckArea.Processes))
+        {
+            console.Write(Section(Strings.SectionProcesses, ProcessesGrid(overview.Processes), width));
+        }
+
         if (relevant.Count > 0)
         {
             console.Write(Section(Strings.FindingsTitle, FindingsGrid(relevant), width));
         }
     }
+
+    /// <summary>How many start with Windows, then each one; disabled ones in quiet grey.</summary>
+    private static IRenderable StartupGrid(IReadOnlyList<StartupEntry>? apps)
+    {
+        if (apps is null)
+        {
+            return Text(Strings.Unknown);
+        }
+
+        var enabled = apps.Count(a => a.Enabled);
+        var summary = string.Format(CultureInfo.CurrentCulture, enabled == 1 ? Strings.StartupSummaryOne : Strings.StartupSummary, enabled);
+        var disabled = apps.Count - enabled;
+        if (disabled > 0)
+        {
+            summary += " · " + string.Format(CultureInfo.CurrentCulture, Strings.StartupDisabledCount, disabled);
+        }
+
+        // Headings sit above the grid, so they don't stretch the name column.
+        var grid = NewTwoColumnGrid();
+        foreach (var app in apps.OrderByDescending(a => a.Enabled))
+        {
+            var scope = app.Scope == StartupScope.CurrentUser ? Strings.StartupScopeUser : Strings.StartupScopeAll;
+            var detail = JoinDots(app.FileName, scope, app.Enabled ? null : Strings.StartupDisabled);
+            grid.AddRow(
+                new Markup(app.Enabled ? Markup.Escape(app.Name) : $"[{Quiet.ToMarkup()}]{Markup.Escape(app.Name)}[/]"),
+                QuietText(detail) ?? Text(string.Empty));
+        }
+
+        return new Rows(new Markup($"[bold]{Markup.Escape(summary)}[/]"), BlankLine(), grid);
+    }
+
+    /// <summary>The five programs using the most memory, then the five using the most CPU.</summary>
+    private static IRenderable ProcessesGrid(IReadOnlyList<ProcessUsage>? processes)
+    {
+        if (processes is null || processes.Count == 0)
+        {
+            return Text(Strings.Unknown);
+        }
+
+        var memory = NewTwoColumnGrid();
+        foreach (var p in processes.OrderByDescending(p => p.MemoryBytes).Take(TopProcesses))
+        {
+            memory.AddRow(ProcessName(p), Text(Formatting.Bytes(p.MemoryBytes)));
+        }
+
+        var busy = processes.Where(p => p.CpuPercent >= 0.1).OrderByDescending(p => p.CpuPercent).Take(TopProcesses).ToList();
+        IRenderable cpu = QuietText(Strings.ProcessesAllIdle)!;
+        if (busy.Count > 0)
+        {
+            var grid = NewTwoColumnGrid();
+            foreach (var p in busy)
+            {
+                // Below 1 % a rounded "0 %" would look like the program does nothing at all.
+                var share = p.CpuPercent!.Value < 1 ? "< 1 %" : Formatting.Percent(p.CpuPercent.Value / 100);
+                grid.AddRow(ProcessName(p), Text(share));
+            }
+
+            cpu = grid;
+        }
+
+        return new Rows(
+            new Markup($"[bold]{Markup.Escape(Strings.ProcessesTopMemory)}[/]"),
+            memory,
+            BlankLine(),
+            new Markup($"[bold]{Markup.Escape(Strings.ProcessesTopCpu)}[/]"),
+            cpu);
+    }
+
+    /// <summary>"chrome (12×)" when a program runs as several processes.</summary>
+    private static Markup ProcessName(ProcessUsage process) =>
+        new(process.Instances > 1
+            ? $"{Markup.Escape(process.Name)} [{Quiet.ToMarkup()}]({process.Instances}×)[/]"
+            : Markup.Escape(process.Name));
 
     private static Panel StatusPanel(List<Finding> findings)
     {
@@ -109,6 +193,10 @@ internal static class SystemOverviewView
             var (name, detail) = WindowsText(overview.Windows);
             Item(Strings.LabelWindows, name, QuietText(detail));
             Item(Strings.LabelUptime, Formatting.Uptime(overview.Uptime));
+            if (overview.RestartPending is { } pending)
+            {
+                Item(Strings.LabelUpdates, pending ? Strings.RestartPending : Strings.RestartNotNeeded);
+            }
         }
 
         if (areas.Contains(CheckArea.Processor))
@@ -213,6 +301,9 @@ internal static class SystemOverviewView
         new Grid()
             .AddColumn(new GridColumn().NoWrap().PadRight(3))
             .AddColumn();
+
+    /// <summary>An empty Markup renders no line at all; a single space does.</summary>
+    private static Markup BlankLine() => new(" ");
 
     private static Markup Label(string label) => new($"[bold]{Markup.Escape(label)}[/]");
 

@@ -186,6 +186,60 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Laufwerke</value>
   </data>
+  <data name="SectionStartup" xml:space="preserve">
+    <value>Autostart-Programme</value>
+  </data>
+  <data name="SectionProcesses" xml:space="preserve">
+    <value>Laufende Programme</value>
+  </data>
+  <data name="LabelUpdates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="RestartPending" xml:space="preserve">
+    <value>Warten auf einen Neustart, um fertig zu installieren</value>
+  </data>
+  <data name="RestartNotNeeded" xml:space="preserve">
+    <value>Kein Neustart nötig</value>
+  </data>
+  <data name="StartupSummary" xml:space="preserve">
+    <value>{0} Programme starten mit Windows</value>
+  </data>
+  <data name="StartupSummaryOne" xml:space="preserve">
+    <value>{0} Programm startet mit Windows</value>
+  </data>
+  <data name="StartupDisabledCount" xml:space="preserve">
+    <value>{0} ausgeschaltet</value>
+  </data>
+  <data name="StartupDisabled" xml:space="preserve">
+    <value>ausgeschaltet</value>
+  </data>
+  <data name="StartupScopeUser" xml:space="preserve">
+    <value>nur für dich</value>
+  </data>
+  <data name="StartupScopeAll" xml:space="preserve">
+    <value>für alle Benutzer</value>
+  </data>
+  <data name="ProcessesTopMemory" xml:space="preserve">
+    <value>Am meisten Arbeitsspeicher</value>
+  </data>
+  <data name="ProcessesTopCpu" xml:space="preserve">
+    <value>Am meisten Prozessor (letzte halbe Sekunde)</value>
+  </data>
+  <data name="ProcessesAllIdle" xml:space="preserve">
+    <value>Gerade ist kein Programm aktiv.</value>
+  </data>
+  <data name="FindingRestartPending" xml:space="preserve">
+    <value>Windows wartet auf einen Neustart, um Updates fertig zu installieren. Nutze „Neu starten“, nicht „Herunterfahren“.</value>
+  </data>
+  <data name="FindingManyStartupApps" xml:space="preserve">
+    <value>{0} Programme starten mit Windows, das bremst die Anmeldung. Schalte unnötige im Task-Manager unter „Autostart-Apps“ aus.</value>
+  </data>
+  <data name="FindingTopMemoryApp" xml:space="preserve">
+    <value>Am meisten Arbeitsspeicher braucht gerade: {0} ({1}).</value>
+  </data>
+  <data name="FindingTopCpuApp" xml:space="preserve">
+    <value>Am meisten Prozessor braucht gerade: {0} ({1}).</value>
+  </data>
   <data name="LabelHealth" xml:space="preserve">
     <value>Zustand</value>
   </data>

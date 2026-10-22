@@ -91,6 +91,19 @@ public class WindowsSystemInfoSourceTests
     }
 
     [Fact]
+    public void StartupApps_RunningPrograms_AndRestartState_AreRead()
+    {
+        var pc = ReadRealMachine();
+
+        Assert.NotNull(pc.StartupApps);
+        Assert.NotNull(pc.RestartPending);
+        Assert.NotNull(pc.Processes);
+        Assert.Contains(pc.Processes, p => p.MemoryBytes > 0);
+        Assert.Contains(pc.Processes, p => p.CpuPercent is not null);
+        Assert.DoesNotContain(pc.Processes, p => p.Name == "Idle");
+    }
+
+    [Fact]
     public void Uptime_IsPositive()
     {
         Assert.True(ReadRealMachine().Uptime > TimeSpan.Zero);

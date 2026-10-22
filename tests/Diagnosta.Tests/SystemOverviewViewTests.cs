@@ -71,11 +71,11 @@ public class SystemOverviewViewTests
     [Fact]
     public void HealthIsShownOnTheDriveLine_WhenTheDiskIsKnown()
     {
-        var output = Render(FakeSystemInfoSource.HealthyPc);
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc, CheckArea.Drives);
         var cLine = output.Split('\n').Single(l => l.Contains("C:", StringComparison.Ordinal));
 
         Assert.Contains("Samsung SSD 980 PRO 1TB  ✓ Healthy", cLine, StringComparison.Ordinal);
-        Assert.DoesNotContain("Health ", output, StringComparison.Ordinal); // no separate health line needed
+        Assert.DoesNotContain("│ Health ", output, StringComparison.Ordinal); // no separate health line needed
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class SystemOverviewViewTests
     {
         var pc = FakeSystemInfoSource.HealthyPc with { Gpus = [new GpuInfo("Intel(R) UHD Graphics", 128UL * 1024 * 1024)] };
 
-        var output = Render(pc, "de");
+        var output = RenderArea(pc, CheckArea.Graphics, "de");
 
         Assert.Contains("Intel(R) UHD Graphics", output, StringComparison.Ordinal);
         Assert.Contains("Integrierte Grafik, nutzt den Arbeitsspeicher mit", output, StringComparison.Ordinal);
@@ -144,6 +144,46 @@ public class SystemOverviewViewTests
 
         Assert.Contains(expected, writer.ToString(), StringComparison.Ordinal);
         Assert.Contains("Tip 0", writer.ToString(), StringComparison.Ordinal);
+    }
+
+    private static string RenderArea(SystemOverview pc, CheckArea area, string culture = "en")
+    {
+        using var _ = new CultureScope(culture);
+        var writer = new StringWriter();
+        SystemOverviewView.Render(TestConsole.Create(writer, 140), pc, SystemOverviewAnalyzer.Analyze(pc), [area]);
+        return writer.ToString();
+    }
+
+    [Fact]
+    public void StartupApps_ShowCountAndMarkTurnedOffOnes()
+    {
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc, CheckArea.Startup);
+
+        Assert.Contains("2 programs start with Windows · 1 turned off", output, StringComparison.Ordinal);
+        Assert.Contains("OneDrive.exe · only for you", output, StringComparison.Ordinal);
+        Assert.Contains("SecurityHealthSystray.exe · for all users", output, StringComparison.Ordinal);
+        Assert.Contains("Spotify.exe · only for you · turned off", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RunningPrograms_ShowTopMemoryAndCpu()
+    {
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc, CheckArea.Processes, "de");
+
+        Assert.Contains("Am meisten Arbeitsspeicher", output, StringComparison.Ordinal);
+        Assert.Contains("chrome (14×)", output, StringComparison.Ordinal);
+        Assert.Contains("3 GB", output, StringComparison.Ordinal);
+        Assert.Contains("Am meisten Prozessor", output, StringComparison.Ordinal);
+        Assert.Contains("5 %", output, StringComparison.Ordinal);
+        Assert.True(output.IndexOf("chrome", StringComparison.Ordinal) < output.IndexOf("Discord", StringComparison.Ordinal), "sorted by usage");
+    }
+
+    [Fact]
+    public void PendingRestart_IsShownInTheWindowsArea()
+    {
+        var output = RenderArea(FakeSystemInfoSource.HealthyPc with { RestartPending = true }, CheckArea.Windows);
+
+        Assert.Contains("Waiting for a restart to finish installing", output, StringComparison.Ordinal);
     }
 
     [Fact]

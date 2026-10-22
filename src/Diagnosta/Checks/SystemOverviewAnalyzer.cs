@@ -27,6 +27,9 @@ internal static class SystemOverviewAnalyzer
     /// <summary>Graphics drivers this old often miss fixes for current games and Windows.</summary>
     public const int OldDriverYears = 2;
 
+    /// <summary>From this many enabled startup apps on, sign-in gets noticeably slower.</summary>
+    public const int ManyStartupApps = 10;
+
     public const double DriveNearlyFullFraction = 0.9;
 
     /// <summary>Below this, Windows updates and temp files start to run out of room.</summary>
@@ -56,9 +59,25 @@ internal static class SystemOverviewAnalyzer
             }
         }
 
+        if (overview.RestartPending == true)
+        {
+            findings.Add(new Finding(Severity.Warning, CheckArea.Windows, Strings.FindingRestartPending));
+        }
+
         if (overview.Cpu.UsagePercent is >= CpuBusyPercent and var usage)
         {
             findings.Add(new Finding(Severity.Warning, CheckArea.Processor, Format(Strings.FindingCpuBusy, Formatting.Percent(usage / 100))));
+
+            // Name the culprit, so the user knows what to close.
+            if (overview.Processes?.Where(p => p.CpuPercent > 0).MaxBy(p => p.CpuPercent) is { } top)
+            {
+                findings.Add(new Finding(Severity.Info, CheckArea.Processes, Format(Strings.FindingTopCpuApp, top.Name, Formatting.Percent(top.CpuPercent!.Value / 100))));
+            }
+        }
+
+        if (overview.StartupApps?.Count(a => a.Enabled) is >= ManyStartupApps and var startupCount)
+        {
+            findings.Add(new Finding(Severity.Info, CheckArea.Startup, Format(Strings.FindingManyStartupApps, startupCount)));
         }
 
         if (overview.Memory is { TotalBytes: > 0 and < UpgradeWorthwhileBelowBytes } && overview.MemoryModules is { FreeSlots: > 0 })
@@ -84,6 +103,11 @@ internal static class SystemOverviewAnalyzer
             if (memory.UsedFraction >= MemoryNearlyFullFraction)
             {
                 findings.Add(new Finding(Severity.Warning, CheckArea.Memory, Format(Strings.FindingMemoryNearlyFull, Formatting.Percent(memory.UsedFraction))));
+
+                if (overview.Processes?.MaxBy(p => p.MemoryBytes) is { MemoryBytes: > 0 } top)
+                {
+                    findings.Add(new Finding(Severity.Info, CheckArea.Processes, Format(Strings.FindingTopMemoryApp, top.Name, Formatting.Bytes(top.MemoryBytes))));
+                }
             }
         }
 

@@ -19,18 +19,43 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
     /// <summary>Long enough to smooth out spikes, short enough not to make the menu feel slow.</summary>
     private static readonly TimeSpan CpuSample = TimeSpan.FromMilliseconds(500);
 
-    public SystemOverview Read() => new(
+    private const string ServicingRebootKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending";
+    private const string UpdateRebootKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired";
+
+    public SystemOverview Read()
+    {
+        // One short window measures both the total CPU load and each program's share.
+        var timesBefore = Try(Kernel32.ReadSystemTimes, null);
+        var processesBefore = Try(TakeProcessSnapshot, null);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        Thread.Sleep(CpuSample);
+        var timesAfter = Try(Kernel32.ReadSystemTimes, null);
+        var processesAfter = Try(TakeProcessSnapshot, null);
+        var elapsed = watch.Elapsed;
+
+        var usage = timesBefore is { } b && timesAfter is { } a ? ProcessSampling.CpuUsage(b, a) : null;
+        var processes = processesBefore is not null && processesAfter is not null
+            ? ProcessSampling.Combine(processesBefore, processesAfter, elapsed, Environment.ProcessorCount)
+            : null;
+
+        return Read(usage, processes);
+    }
+
+    private static SystemOverview Read(double? cpuUsage, IReadOnlyList<ProcessUsage>? processes) => new(
         Cpu: new CpuInfo(
             Name: Try(() => (ReadValue(CpuKey, "ProcessorNameString") as string)?.Trim(), null),
             PhysicalCores: Try(Kernel32.CountPhysicalCores, null),
             LogicalProcessors: Environment.ProcessorCount,
-            UsagePercent: Try(() => Kernel32.MeasureCpuUsage(CpuSample), null),
+            UsagePercent: cpuUsage,
             BaseMhz: Try(() => ReadValue(CpuKey, "~MHz") as int?, null)),
         Memory: Try(Kernel32.ReadMemory, null),
         MemoryModules: Try(() => Kernel32.ReadSmbiosTable() is { } table ? SmbiosParser.ParseMemory(table) : null, null),
         Gpus: Try(Dxgi.ReadGpus, null),
         Drives: Try(ReadDrives, null),
         PhysicalDisks: Try(Wmi.ReadPhysicalDisks, null),
+        StartupApps: Try(WindowsStartupApps.Read, null),
+        Processes: processes,
+        RestartPending: Try(ReadRestartPending, null),
         Windows: Try(ReadWindows, null),
         // Counts since the last real boot, including sleep, hibernation and Fast Startup.
         Uptime: TimeSpan.FromMilliseconds(Environment.TickCount64),
@@ -45,6 +70,54 @@ internal sealed class WindowsSystemInfoSource : ISystemInfoSource
             DisplayVersion: ReadValue(CurrentVersionKey, "DisplayVersion") as string,
             Build: build,
             UpdateRevision: ReadValue(CurrentVersionKey, "UBR") as int?);
+    }
+
+    /// <summary>
+    /// Windows sets these keys while installed updates wait for a restart. The often-cited
+    /// "PendingFileRenameOperations" value is left out on purpose: virus scanners use it too,
+    /// so it reports restarts that are not really needed.
+    /// </summary>
+    private static bool? ReadRestartPending()
+    {
+        using var servicing = Registry.LocalMachine.OpenSubKey(ServicingRebootKey);
+        using var update = Registry.LocalMachine.OpenSubKey(UpdateRebootKey);
+        return servicing is not null || update is not null;
+    }
+
+    private static List<ProcessSnapshot> TakeProcessSnapshot()
+    {
+        var snapshots = new List<ProcessSnapshot>();
+        foreach (var process in System.Diagnostics.Process.GetProcesses())
+        {
+            using (process)
+            {
+                if (process.Id == 0)
+                {
+                    continue; // "Idle" is not a program, just unused CPU time
+                }
+
+                try
+                {
+                    TimeSpan? cpu;
+                    try
+                    {
+                        cpu = process.TotalProcessorTime;
+                    }
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        cpu = null; // protected system process: no access without admin rights
+                    }
+
+                    snapshots.Add(new ProcessSnapshot(process.Id, process.ProcessName, process.WorkingSet64, cpu));
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process ended while we were looking at it.
+                }
+            }
+        }
+
+        return snapshots;
     }
 
     /// <summary>Internal drives only: USB sticks and network drives would just add noise.</summary>

@@ -186,6 +186,60 @@
   <data name="SectionDrives" xml:space="preserve">
     <value>Drives</value>
   </data>
+  <data name="SectionStartup" xml:space="preserve">
+    <value>Startup apps</value>
+  </data>
+  <data name="SectionProcesses" xml:space="preserve">
+    <value>Running programs</value>
+  </data>
+  <data name="LabelUpdates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="RestartPending" xml:space="preserve">
+    <value>Waiting for a restart to finish installing</value>
+  </data>
+  <data name="RestartNotNeeded" xml:space="preserve">
+    <value>No restart needed</value>
+  </data>
+  <data name="StartupSummary" xml:space="preserve">
+    <value>{0} programs start with Windows</value>
+  </data>
+  <data name="StartupSummaryOne" xml:space="preserve">
+    <value>{0} program starts with Windows</value>
+  </data>
+  <data name="StartupDisabledCount" xml:space="preserve">
+    <value>{0} turned off</value>
+  </data>
+  <data name="StartupDisabled" xml:space="preserve">
+    <value>turned off</value>
+  </data>
+  <data name="StartupScopeUser" xml:space="preserve">
+    <value>only for you</value>
+  </data>
+  <data name="StartupScopeAll" xml:space="preserve">
+    <value>for all users</value>
+  </data>
+  <data name="ProcessesTopMemory" xml:space="preserve">
+    <value>Most memory</value>
+  </data>
+  <data name="ProcessesTopCpu" xml:space="preserve">
+    <value>Most processor (last half second)</value>
+  </data>
+  <data name="ProcessesAllIdle" xml:space="preserve">
+    <value>All programs are idle right now.</value>
+  </data>
+  <data name="FindingRestartPending" xml:space="preserve">
+    <value>Windows is waiting for a restart to finish installing updates. Use Restart, not Shut down.</value>
+  </data>
+  <data name="FindingManyStartupApps" xml:space="preserve">
+    <value>{0} programs start with Windows, which slows down sign-in. Turn off the ones you don't need in Task Manager under Startup apps.</value>
+  </data>
+  <data name="FindingTopMemoryApp" xml:space="preserve">
+    <value>Using the most memory right now: {0} ({1}).</value>
+  </data>
+  <data name="FindingTopCpuApp" xml:space="preserve">
+    <value>Using the most processor right now: {0} ({1}).</value>
+  </data>
   <data name="LabelHealth" xml:space="preserve">
     <value>Health</value>
   </data>

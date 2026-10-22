@@ -17,6 +17,8 @@ internal enum CheckArea
     Memory,
     Graphics,
     Drives,
+    Startup,
+    Processes,
 }
 
 /// <summary>One plain-language observation about the PC.</summary>

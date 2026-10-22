@@ -63,28 +63,11 @@ internal static partial class Kernel32
     }
 
     /// <summary>
-    /// Average CPU load over <paramref name="sample"/>. Windows counts how long all cores
-    /// together spent idle, in the kernel and in programs; the share that was not idle is
-    /// the load. (The kernel time includes the idle time.)
+    /// How long all cores together have spent idle, in the kernel and in programs since boot.
+    /// Two readings a moment apart give the CPU load (see ProcessSampling.CpuUsage).
     /// </summary>
-    public static double? MeasureCpuUsage(TimeSpan sample)
-    {
-        if (!GetSystemTimes(out var idle1, out var kernel1, out var user1))
-        {
-            return null;
-        }
-
-        Thread.Sleep(sample);
-
-        if (!GetSystemTimes(out var idle2, out var kernel2, out var user2))
-        {
-            return null;
-        }
-
-        var total = (kernel2 - kernel1) + (user2 - user1);
-        var idle = idle2 - idle1;
-        return total <= 0 ? null : Math.Clamp(100.0 * (total - idle) / total, 0, 100);
-    }
+    public static (long Idle, long Kernel, long User)? ReadSystemTimes() =>
+        GetSystemTimes(out var idle, out var kernel, out var user) ? (idle, kernel, user) : null;
 
     /// <summary>The raw SMBIOS table (hardware description from the firmware), without its header.</summary>
     public static unsafe byte[]? ReadSmbiosTable()
