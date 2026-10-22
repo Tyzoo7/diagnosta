@@ -81,7 +81,7 @@ Ein offizielles Release gibt es noch nicht. Jeder CI-Lauf baut eine eigenständi
 1. Öffne **Actions → CI**, wähle den neuesten grünen Lauf und lade unter *Artifacts*
    **Diagnosta-win-x64** herunter.
 2. Entpacke die Datei, öffne ein Terminal in diesem Ordner und starte `.\Diagnosta.exe`.
-   Ein Doppelklick funktioniert auch: Das Fenster bleibt offen, bis du eine Taste drückst.
+   Ein Doppelklick funktioniert auch: Das Fenster bleibt offen, bis du Esc drückst oder es schließt.
 3. Optional kannst du `Get-FileHash .\Diagnosta.exe` mit dem SHA-256 in der Zusammenfassung des Laufs vergleichen.
 
 Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start eventuell.

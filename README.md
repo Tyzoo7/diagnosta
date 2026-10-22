@@ -79,7 +79,7 @@ There is no official release yet. Every CI run builds a standalone `Diagnosta.ex
 1. Open **Actions → CI**, pick the latest green run, and download **Diagnosta-win-x64**
    under *Artifacts*.
 2. Unzip it, open a terminal in that folder, and run `.\Diagnosta.exe`.
-   Double-clicking also works: the window stays open until you press a key.
+   Double-clicking also works: the window stays open until you press Esc or close it.
 3. Optionally, compare `Get-FileHash .\Diagnosta.exe` with the SHA-256 shown in the run summary.
 
 The exe is not code-signed yet, so Windows SmartScreen may warn the first time you run it.
