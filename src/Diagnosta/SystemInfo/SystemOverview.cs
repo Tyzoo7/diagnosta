@@ -12,7 +12,37 @@ internal sealed record MemoryInfo(ulong TotalBytes, ulong AvailableBytes)
     public double UsedFraction => TotalBytes == 0 ? 0 : (double)UsedBytes / TotalBytes;
 }
 
-internal sealed record GpuInfo(string Name, ulong? DedicatedMemoryBytes);
+internal sealed record GpuInfo(string Name, ulong? DedicatedMemoryBytes)
+{
+    /// <summary>
+    /// Built-in graphics only reserves a small slice of memory (typically 128–512 MB)
+    /// and borrows the rest from RAM. Dedicated cards have at least 2 GB nowadays.
+    /// </summary>
+    public const ulong IntegratedThresholdBytes = 1024UL * 1024 * 1024;
+
+    public bool IsIntegrated => DedicatedMemoryBytes is null || DedicatedMemoryBytes < IntegratedThresholdBytes;
+}
+
+internal enum DriveKind
+{
+    Unknown,
+    Ssd,
+    Hdd,
+}
+
+/// <summary>A drive letter such as C:. The serial number is deliberately never read (privacy).</summary>
+internal sealed record VolumeInfo(
+    string Letter,
+    string? Label,
+    ulong TotalBytes,
+    ulong FreeBytes,
+    bool IsSystemDrive,
+    DriveKind Kind,
+    string? BusType,
+    string? Model)
+{
+    public double UsedFraction => TotalBytes == 0 ? 0 : (double)(TotalBytes - Math.Min(FreeBytes, TotalBytes)) / TotalBytes;
+}
 
 internal sealed record WindowsInfo(string Name, string? Edition, string? DisplayVersion, int Build, int? UpdateRevision)
 {
@@ -23,6 +53,7 @@ internal sealed record SystemOverview(
     CpuInfo Cpu,
     MemoryInfo? Memory,
     IReadOnlyList<GpuInfo>? Gpus,
+    IReadOnlyList<VolumeInfo>? Drives,
     WindowsInfo? Windows,
     TimeSpan Uptime,
     bool? FastStartupEnabled);

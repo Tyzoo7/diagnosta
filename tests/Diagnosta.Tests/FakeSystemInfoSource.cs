@@ -11,6 +11,11 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         Cpu: new CpuInfo("AMD Ryzen 5 7600X 6-Core Processor", PhysicalCores: 6, LogicalProcessors: 12),
         Memory: new MemoryInfo(TotalBytes: 32 * GB, AvailableBytes: 20 * GB),
         Gpus: [new GpuInfo("NVIDIA GeForce RTX 4070", 12 * GB)],
+        Drives:
+        [
+            new VolumeInfo("C:", null, 931 * GB, 412 * GB, IsSystemDrive: true, DriveKind.Ssd, "NVMe", "Samsung SSD 980 PRO 1TB"),
+            new VolumeInfo("D:", "Games", 1863 * GB, 900 * GB, IsSystemDrive: false, DriveKind.Hdd, "SATA", "WDC WD20EZRZ-00Z5HB0"),
+        ],
         Windows: new WindowsInfo("Windows 11", "Pro", "24H2", Build: 26100, UpdateRevision: 2314),
         Uptime: TimeSpan.FromHours(5.5),
         FastStartupEnabled: false);
@@ -20,6 +25,7 @@ internal sealed class FakeSystemInfoSource(SystemOverview overview) : ISystemInf
         Cpu: new CpuInfo(Name: null, PhysicalCores: null, LogicalProcessors: 4),
         Memory: null,
         Gpus: null,
+        Drives: null,
         Windows: null,
         Uptime: TimeSpan.Zero,
         FastStartupEnabled: null);

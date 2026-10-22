@@ -14,19 +14,15 @@ public class SystemOverviewAnalyzerTests
     }
 
     [Fact]
-    public void HealthyPc_GetsASingleAllGood()
+    public void HealthyPc_HasNoFindings()
     {
-        var finding = Assert.Single(Analyze(FakeSystemInfoSource.HealthyPc));
-
-        Assert.Equal(Severity.Ok, finding.Severity);
+        Assert.Empty(Analyze(FakeSystemInfoSource.HealthyPc));
     }
 
     [Fact]
     public void SilentPc_DoesNotCrash_AndRaisesNoFalseAlarms()
     {
-        var finding = Assert.Single(Analyze(FakeSystemInfoSource.SilentPc));
-
-        Assert.Equal(Severity.Ok, finding.Severity);
+        Assert.Empty(Analyze(FakeSystemInfoSource.SilentPc));
     }
 
     [Fact]
@@ -78,7 +74,7 @@ public class SystemOverviewAnalyzerTests
     {
         var pc = FakeSystemInfoSource.HealthyPc with { FastStartupEnabled = true };
 
-        Assert.Equal(Severity.Ok, Assert.Single(Analyze(pc)).Severity);
+        Assert.Empty(Analyze(pc));
     }
 
     [Theory]
@@ -126,6 +122,62 @@ public class SystemOverviewAnalyzerTests
 
         // Windows 10, long uptime, Fast Startup explanation, low memory, memory nearly full
         Assert.Equal(5, findings.Count);
-        Assert.DoesNotContain(findings, f => f.Severity == Severity.Ok);
+    }
+
+    [Fact]
+    public void Warnings_ComeBeforeInformation()
+    {
+        var pc = FakeSystemInfoSource.HealthyPc with
+        {
+            Uptime = TimeSpan.FromDays(30),
+            FastStartupEnabled = true,
+            Memory = new MemoryInfo(4 * GB, GB / 10),
+        };
+
+        var severities = Analyze(pc).Select(f => f.Severity).ToList();
+
+        Assert.Equal(severities.OrderByDescending(s => s), severities);
+        Assert.Equal(Severity.Warning, severities[0]);
+        Assert.Equal(Severity.Info, severities[^1]);
+    }
+
+    [Theory]
+    [InlineData(0.89, false)]
+    [InlineData(0.90, true)]
+    public void DataDrive_IsWarnedAboutFromNinetyPercent(double usedFraction, bool expectWarning)
+    {
+        var total = 2000 * GB;
+        var drive = new VolumeInfo("D:", null, total, (ulong)(total * (1 - usedFraction)), false, DriveKind.Hdd, null, null);
+        var pc = FakeSystemInfoSource.HealthyPc with { Drives = [drive] };
+
+        var warning = Analyze(pc).SingleOrDefault();
+
+        Assert.Equal(expectWarning, warning is not null);
+        if (warning is not null)
+        {
+            Assert.Contains("D:", warning.Message, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void SmallSystemDrive_IsWarnedAboutBelowTenGigabytesEvenIfNotNinetyPercentFull()
+    {
+        // 64 GB drive with 8 GB free is only 87.5 % full, but too tight for Windows updates.
+        var drive = new VolumeInfo("C:", null, 64 * GB, 8 * GB, true, DriveKind.Ssd, null, null);
+        var pc = FakeSystemInfoSource.HealthyPc with { Drives = [drive] };
+
+        var warning = Assert.Single(Analyze(pc));
+
+        Assert.Contains("C: (Windows)", warning.Message, StringComparison.Ordinal);
+        Assert.Contains("8 GB", warning.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EmptyOrUnknownDriveSize_DoesNotWarn()
+    {
+        var drive = new VolumeInfo("E:", null, 0, 0, false, DriveKind.Unknown, null, null);
+        var pc = FakeSystemInfoSource.HealthyPc with { Drives = [drive] };
+
+        Assert.Empty(Analyze(pc));
     }
 }

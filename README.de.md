@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.3).** Die erste Prüfung, der Systemüberblick, ist fertig.
+> **Status: frühe Entwicklung (v0.4).** Systemüberblick und Laufwerksübersicht sind fertig.
 > Weitere Prüfungen kommen Schritt für Schritt dazu.
 
 ## Warum noch ein Diagnose-Tool?
@@ -27,7 +27,8 @@ Genau dafür ist Diagnosta gebaut:
 ## Geplant für v1.0
 
 - [x] Systemüberblick: CPU, RAM, Grafikkarte, Windows-Version, Laufzeit, mit verständlichen Hinweisen
-- [ ] Laufwerksgesundheit (SMART)
+- [x] Laufwerksübersicht: SSD/HDD, Modell, freier Platz, Warnung wenn fast voll
+- [ ] Laufwerksgesundheit (Verschleiß, Fehler)
 - [ ] Speicheranalyse: größte Ordner und Dateien
 - [ ] Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
 - [ ] Autostart-Programme
@@ -44,26 +45,33 @@ Genau dafür ist Diagnosta gebaut:
 ## Was es heute zeigt
 
 ```text
-                                      Systemüberblick
-╭─────────────────────────────┬──────────────────────────────────────────────────────────╮
-│ Windows                     │ Windows 11 Pro 24H2 (Build 26100.2314)                   │
-│ Prozessor                   │ AMD Ryzen 5 7600X 6-Core Processor (6 Kerne, 12 Threads) │
-│ Arbeitsspeicher (RAM)       │ 12 GB von 32 GB belegt (38 %)                            │
-│                             │ ███████████░░░░░░░░░░░░░░░░░░░                           │
-│ Grafik                      │ NVIDIA GeForce RTX 4070 (12 GB eigener Speicher)         │
-│ Läuft seit letztem Neustart │ 23 Tage, 4 Std.                                          │
-╰─────────────────────────────┴──────────────────────────────────────────────────────────╯
-
-Hinweise
- ! Dieser PC wurde seit 23 Tagen nicht neu gestartet. Ein Neustart schließt ausstehende
-   Updates ab und behebt oft Langsamkeit.
- i Schnellstart ist aktiv, deshalb startet „Herunterfahren“ Windows nicht wirklich neu.
-   Nutze stattdessen „Neu starten“.
+╭──────────────────────────────────────────────────────────────────────────────────╮
+│ !  2 Hinweise – Details siehe unten.                                             │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ System ─────────────────────────────────────────────────────────────────────────╮
+│ Windows                Windows 11 Pro 24H2 (Build 26100.2314)                    │
+│ Prozessor              AMD Ryzen 5 7600X 6-Core Processor (6 Kerne, 12 Threads)  │
+│ Arbeitsspeicher (RAM)  12 GB von 32 GB belegt (38 %)                             │
+│                        ███████████░░░░░░░░░░░░░░░░░░░                            │
+│ Grafik                 NVIDIA GeForce RTX 4070 (12 GB eigener Speicher)          │
+│ Seit Neustart          23 Tage, 4 Std.                                           │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ Laufwerke ──────────────────────────────────────────────────────────────────────╮
+│ C:  Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                                 │
+│     █████████████████░░░░░░░░░░░░░ 412 GB frei von 931 GB (56 % belegt)          │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ Hinweise ───────────────────────────────────────────────────────────────────────╮
+│ ! Dieser PC wurde seit 23 Tagen nicht neu gestartet. Ein Neustart schließt       │
+│   ausstehende Updates ab und behebt oft Langsamkeit.                             │
+│ i Schnellstart ist aktiv, deshalb startet „Herunterfahren“ Windows nicht         │
+│   wirklich neu. Nutze stattdessen „Neu starten“.                                 │
+╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI).
-Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher über 4 GB wird
-korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
+Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI,
+Speicher-IOCTLs). Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher
+über 4 GB wird korrekt angezeigt, anders als bei Tools, die auf WMI basieren.
+Seriennummern von Laufwerken werden nie ausgelesen.
 
 ## Ausprobieren
 

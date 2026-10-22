@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.3).** The first check, the system overview, is in place.
+> **Status: early development (v0.4).** The system overview and drive overview are in place.
 > More checks are being added one by one.
 
 ## Why another diagnostics tool?
@@ -26,7 +26,8 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 ## Planned for v1.0
 
 - [x] System overview: CPU, RAM, GPU, Windows version, uptime, with plain-language hints
-- [ ] Drive health (SMART)
+- [x] Drive overview: SSD/HDD, model, free space, warning when nearly full
+- [ ] Drive health (wear, errors)
 - [ ] Storage analysis: largest folders and files
 - [ ] Cleanup suggestions: temp files, update cache, recycle bin
 - [ ] Startup programs
@@ -43,25 +44,32 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 ## What it shows today
 
 ```text
-                                     System overview
-╭─────────────────────────────┬──────────────────────────────────────────────────────────╮
-│ Windows                     │ Windows 11 Pro 24H2 (Build 26100.2314)                   │
-│ Processor                   │ AMD Ryzen 5 7600X 6-Core Processor (6 cores, 12 threads) │
-│ Memory (RAM)                │ 12 GB of 32 GB in use (38 %)                             │
-│                             │ ███████████░░░░░░░░░░░░░░░░░░░                           │
-│ Graphics                    │ NVIDIA GeForce RTX 4070 (12 GB dedicated memory)         │
-│ Running since last restart  │ 23 days, 4 h                                             │
-╰─────────────────────────────┴──────────────────────────────────────────────────────────╯
-
-Findings
- ! This PC has not been restarted for 23 days. A restart finishes pending updates and
-   often fixes slowness.
- i Fast Startup is on, so "Shut down" does not really restart Windows. Use "Restart" instead.
+╭──────────────────────────────────────────────────────────────────────────────────╮
+│ !  2 findings – details below.                                                   │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ System ─────────────────────────────────────────────────────────────────────────╮
+│ Windows        Windows 11 Pro 24H2 (Build 26100.2314)                            │
+│ Processor      AMD Ryzen 5 7600X 6-Core Processor (6 cores, 12 threads)          │
+│ Memory (RAM)   12 GB of 32 GB in use (38 %)                                      │
+│                ███████████░░░░░░░░░░░░░░░░░░░                                    │
+│ Graphics       NVIDIA GeForce RTX 4070 (12 GB dedicated memory)                  │
+│ Since restart  23 days, 4 h                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ Drives ─────────────────────────────────────────────────────────────────────────╮
+│ C:  Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                                 │
+│     █████████████████░░░░░░░░░░░░░ 412 GB free of 931 GB (56 % used)             │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ Findings ───────────────────────────────────────────────────────────────────────╮
+│ ! This PC has not been restarted for 23 days. A restart finishes pending updates │
+│   and often fixes slowness.                                                      │
+│ i Fast Startup is on, so "Shut down" does not really restart Windows. Use        │
+│   "Restart" instead.                                                             │
+╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Everything is read with built-in Windows interfaces (registry, kernel32, DXGI).
+Everything is read with built-in Windows interfaces (registry, kernel32, DXGI, storage IOCTLs).
 No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown
-correctly, unlike tools based on WMI.
+correctly, unlike tools based on WMI. Drive serial numbers are never read.
 
 ## Trying it out
 

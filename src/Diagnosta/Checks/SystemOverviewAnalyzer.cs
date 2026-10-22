@@ -19,6 +19,12 @@ internal static class SystemOverviewAnalyzer
 
     public const double MemoryNearlyFullFraction = 0.9;
 
+    public const double DriveNearlyFullFraction = 0.9;
+
+    /// <summary>Below this, Windows updates and temp files start to run out of room.</summary>
+    public const ulong SystemDriveMinFreeBytes = 10UL * 1024 * 1024 * 1024;
+
+    /// <summary>Returns only things worth mentioning, warnings first. Empty means "all good".</summary>
     public static IReadOnlyList<Finding> Analyze(SystemOverview overview)
     {
         ArgumentNullException.ThrowIfNull(overview);
@@ -54,14 +60,27 @@ internal static class SystemOverviewAnalyzer
             }
         }
 
-        if (findings.Count == 0)
+        foreach (var drive in overview.Drives ?? [])
         {
-            findings.Add(new Finding(Severity.Ok, Strings.FindingAllGood));
+            if (IsNearlyFull(drive))
+            {
+                var template = drive.IsSystemDrive ? Strings.FindingSystemDriveNearlyFull : Strings.FindingDriveNearlyFull;
+                findings.Add(new Finding(Severity.Warning, Format(template, drive.Letter, Formatting.Bytes(drive.FreeBytes))));
+            }
         }
 
-        return findings;
+        // OrderByDescending is stable, so findings keep their order within a severity.
+        return findings.OrderByDescending(f => f.Severity).ToList();
     }
 
-    private static string Format(string template, object value) =>
-        string.Format(CultureInfo.CurrentCulture, template, value);
+    public static bool IsNearlyFull(VolumeInfo drive)
+    {
+        ArgumentNullException.ThrowIfNull(drive);
+        return drive.TotalBytes > 0
+            && (drive.UsedFraction >= DriveNearlyFullFraction
+                || (drive.IsSystemDrive && drive.FreeBytes < SystemDriveMinFreeBytes));
+    }
+
+    private static string Format(string template, params object[] values) =>
+        string.Format(CultureInfo.CurrentCulture, template, values);
 }
