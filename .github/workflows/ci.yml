@@ -53,7 +53,7 @@ jobs:
         if: failure()
         shell: pwsh
         run: |
-          $output = & tests/Diagnosta.Tests/bin/Release/net10.0/Diagnosta.Tests.exe --no-ansi 2>&1 | Out-String
+          $output = & tests/Diagnosta.Tests/bin/Release/net10.0/Diagnosta.Tests.exe 2>&1 | Out-String
           $exitCode = $LASTEXITCODE
           $lines = $output -split "\r?\n" | Where-Object { $_.Trim() } | Select-Object -Last 60
           # Workflow commands need %, CR and LF escaped.
