@@ -3,6 +3,7 @@ using System.Reflection;
 using Diagnosta.Checks;
 using Diagnosta.Cli;
 using Diagnosta.Localization;
+using Diagnosta.Report;
 using Diagnosta.SystemInfo;
 using Spectre.Console;
 
@@ -20,11 +21,13 @@ internal sealed class App(
     IAnsiConsole console,
     IAnsiConsole errorConsole,
     ISystemInfoSource? systemInfo,
-    InteractiveOptions? interactive = null)
+    InteractiveOptions? interactive = null,
+    IReportStore? reports = null)
 {
     public const int ExitSuccess = 0;
     public const int ExitUsageError = 2;
     public const int ExitUnsupportedPlatform = 3;
+    public const int ExitReportFailed = 4;
 
     private const string AuthorUrl = "https://github.com/Tyzoo7";
 
@@ -87,6 +90,39 @@ internal sealed class App(
         SystemOverviewView.Render(console, overview, SystemOverviewAnalyzer.Analyze(overview), areas);
     }
 
+    /// <summary>Reads the PC, saves the report and says where it is. Returns the path, or null if saving failed.</summary>
+    public string? WriteReport(bool anonymize, DateTimeOffset? now = null)
+    {
+        var overview = systemInfo!.Read();
+        var createdAt = now ?? DateTimeOffset.Now;
+        var html = SupportReport.Build(overview, SystemOverviewAnalyzer.Analyze(overview), new ReportOptions(anonymize, createdAt, Version));
+        var fileName = string.Create(CultureInfo.InvariantCulture, $"{Strings.ReportFileName}-{createdAt:yyyy-MM-dd_HH-mm-ss}.html");
+
+        try
+        {
+            var path = (reports ?? new DesktopReportStore()).Save(fileName, html);
+            console.MarkupLine($"[green bold]✓[/] {Markup.Escape(string.Format(CultureInfo.CurrentCulture, Strings.ReportSaved, path))}");
+            return path;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            errorConsole.MarkupLine($"[red]{Markup.Escape(string.Format(CultureInfo.CurrentCulture, Strings.ReportSaveFailed, ex.Message))}[/]");
+            return null;
+        }
+    }
+
+    public void OpenReport(string path)
+    {
+        try
+        {
+            (reports ?? new DesktopReportStore()).Open(path);
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            // No browser associated with .html: the path printed above is enough.
+        }
+    }
+
     public void WriteAbout()
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(3)).AddColumn();
@@ -114,6 +150,11 @@ internal sealed class App(
         {
             errorConsole.MarkupLine($"[red]{Markup.Escape(Strings.WindowsOnly)}[/]");
             return ExitUnsupportedPlatform;
+        }
+
+        if (options.Report)
+        {
+            return WriteReport(anonymize: true) is null ? ExitReportFailed : ExitSuccess;
         }
 
         if (interactive is not null && !options.FullCheck)
@@ -146,6 +187,7 @@ internal sealed class App(
         options.AddRow("[deepskyblue1]-h, --help[/]", Markup.Escape(Strings.HelpOptionHelp));
         options.AddRow("[deepskyblue1]-v, --version[/]", Markup.Escape(Strings.HelpOptionVersion));
         options.AddRow("[deepskyblue1]-f, --full[/]", Markup.Escape(Strings.HelpOptionFull));
+        options.AddRow("[deepskyblue1]-r, --report[/]", Markup.Escape(Strings.HelpOptionReport));
         options.AddRow("[deepskyblue1]--lang <de|en>[/]", Markup.Escape(Strings.HelpOptionLanguage));
 
         console.MarkupLine($"[bold]{Markup.Escape(Strings.HelpOptions)}:[/]");

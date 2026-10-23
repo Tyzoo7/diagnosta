@@ -17,6 +17,7 @@ internal enum MenuAction
     Network,
     StartupApps,
     Processes,
+    SupportReport,
     About,
     ChangeLanguage,
     Quit,
@@ -59,6 +60,11 @@ internal sealed class InteractiveSession(App app, IChoicePrompt prompt, Action c
                     app.WriteHeader();
                     break;
 
+                case MenuAction.SupportReport:
+                    app.WriteCompactHeader();
+                    CreateReport();
+                    break;
+
                 case MenuAction.About:
                     app.WriteCompactHeader();
                     app.WriteAbout();
@@ -86,6 +92,19 @@ internal sealed class InteractiveSession(App app, IChoicePrompt prompt, Action c
         _ => SystemOverviewView.AllAreas,
     };
 
+    /// <summary>Asks whether to hide personal details (recommended), saves, then offers to open it.</summary>
+    private void CreateReport()
+    {
+        var anonymize = prompt.Choose(Strings.ReportAskAnonymize, [true, false],
+            hide => hide ? Strings.ReportAnonymizeYes : Strings.ReportAnonymizeNo);
+
+        if (app.WriteReport(anonymize) is { } path
+            && prompt.Choose(Strings.ReportAskOpen, [true, false], open => open ? Strings.Yes : Strings.No))
+        {
+            app.OpenReport(path);
+        }
+    }
+
     private void ChooseLanguage()
     {
         // The current (Windows) language comes first, so Enter keeps it.
@@ -108,6 +127,7 @@ internal sealed class InteractiveSession(App app, IChoicePrompt prompt, Action c
         MenuAction.Network => Strings.SectionNetwork,
         MenuAction.StartupApps => Strings.SectionStartup,
         MenuAction.Processes => Strings.SectionProcesses,
+        MenuAction.SupportReport => Strings.MenuReport,
         MenuAction.About => Strings.MenuAbout,
         MenuAction.ChangeLanguage => Strings.MenuChangeLanguage,
         _ => Strings.MenuQuit,

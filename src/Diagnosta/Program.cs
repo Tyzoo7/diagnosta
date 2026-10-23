@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Diagnosta.Cli;
 using Diagnosta.Localization;
+using Diagnosta.Report;
 using Diagnosta.SystemInfo;
 using Diagnosta.SystemInfo.Native;
 using Diagnosta.Ui;
@@ -35,10 +36,10 @@ ISystemInfoSource? systemInfo = OperatingSystem.IsWindows() ? new WindowsSystemI
 var canShowMenu = !Console.IsInputRedirected && !Console.IsOutputRedirected && console.Profile.Capabilities.Interactive;
 var interactive = canShowMenu ? new InteractiveOptions(new SpectreChoicePrompt(console), console.Clear) : null;
 
-var exitCode = new App(console, errorConsole, systemInfo, interactive).Run(parseResult);
+var exitCode = new App(console, errorConsole, systemInfo, interactive, new DesktopReportStore()).Run(parseResult);
 
 // Without the menu (e.g. "--full" after a double-click) the window would close at once.
-var usedMenu = interactive is not null && parseResult.Options is { Command: CliCommand.Run, FullCheck: false } && systemInfo is not null;
+var usedMenu = interactive is not null && parseResult.Options is { Command: CliCommand.Run, FullCheck: false, Report: false } && systemInfo is not null;
 if (OperatingSystem.IsWindows() && !usedMenu && !Console.IsInputRedirected && Kernel32.IsAloneInConsoleWindow())
 {
     console.WriteLine();

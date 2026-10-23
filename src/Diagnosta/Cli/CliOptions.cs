@@ -17,7 +17,8 @@ internal enum CliErrorKind
 }
 
 /// <param name="FullCheck">Print the full PC check straight away instead of showing the menu.</param>
-internal sealed record CliOptions(CliCommand Command, string? Language, bool FullCheck = false);
+/// <param name="Report">Save an anonymised support report and exit.</param>
+internal sealed record CliOptions(CliCommand Command, string? Language, bool FullCheck = false, bool Report = false);
 
 internal sealed record CliError(CliErrorKind Kind, string Argument);
 

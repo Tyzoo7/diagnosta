@@ -5,19 +5,22 @@ namespace Diagnosta.Tests;
 
 public class InteractiveSessionTests
 {
-    private sealed record Result(int ExitCode, string Output, ScriptedPrompt Prompt, int Clears);
+    private sealed record Result(int ExitCode, string Output, ScriptedPrompt Prompt, int Clears, FakeReportStore Reports);
 
-    private static Result Run(string systemCulture, string[] args, params string[] answers)
+    private static Result Run(string systemCulture, string[] args, params string[] answers) =>
+        RunWith(new FakeReportStore(), systemCulture, args, answers);
+
+    private static Result RunWith(FakeReportStore reports, string systemCulture, string[] args, params string[] answers)
     {
         using var _ = new CultureScope(systemCulture);
         var writer = new StringWriter();
-        var console = TestConsole.Create(writer, width: 140);
+        var console = TestConsole.Create(writer, width: 200);
         var prompt = new ScriptedPrompt(answers);
         var clears = 0;
-        var app = new App(console, console, new FakeSystemInfoSource(FakeSystemInfoSource.HealthyPc), new InteractiveOptions(prompt, () => clears++));
+        var app = new App(console, console, new FakeSystemInfoSource(FakeSystemInfoSource.HealthyPc), new InteractiveOptions(prompt, () => clears++), reports);
 
         var exitCode = app.Run(CliParser.Parse(args));
-        return new Result(exitCode, writer.ToString(), prompt, clears);
+        return new Result(exitCode, writer.ToString(), prompt, clears, reports);
     }
 
     [Fact]
@@ -47,7 +50,7 @@ public class InteractiveSessionTests
         var result = Run("en-US", [], "English", "Quit");
 
         Assert.Equal(
-            ["Full PC check", "Windows", "Processor", "Memory (RAM)", "Graphics", "Drives", "Battery", "Network", "Startup apps", "Running programs", "About Diagnosta", "Change language", "Quit"],
+            ["Full PC check", "Windows", "Processor", "Memory (RAM)", "Graphics", "Drives", "Battery", "Network", "Startup apps", "Running programs", "Create support report", "About Diagnosta", "Change language", "Quit"],
             result.Prompt.Asked[1].Choices);
     }
 
@@ -61,6 +64,48 @@ public class InteractiveSessionTests
         Assert.Contains("Samsung SSD 980 PRO 1TB", result.Output, StringComparison.Ordinal);
         Assert.Contains("AMD Ryzen 5 7600X", result.Output, StringComparison.Ordinal);
         Assert.True(result.Clears >= 4, "every new screen starts clean");
+    }
+
+    [Fact]
+    public void SupportReport_IsAnonymisedSavedAndOpened_WhenTheUserSaysSo()
+    {
+        var result = Run("en-US", [], "English", "Create support report", "Yes, hide them (recommended)", "Yes", "Quit");
+
+        var (path, html) = Assert.Single(result.Reports.Saved);
+        Assert.Matches(@"Diagnosta-Report-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.html$", path);
+        Assert.Contains("192.168.1.xxx", html, StringComparison.Ordinal);
+        Assert.Equal([path], result.Reports.Opened);
+        Assert.Contains("Report saved:", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SupportReport_CanIncludeEverything_AndStayClosed()
+    {
+        var result = Run("de-DE", [], "Deutsch", "Support-Bericht erstellen", "Nein, alles anzeigen", "Nein", "Beenden");
+
+        var html = Assert.Single(result.Reports.Saved).Value;
+        Assert.Contains("192.168.1.23", html, StringComparison.Ordinal);
+        Assert.Contains("Diagnosta-Bericht-", Assert.Single(result.Reports.Saved).Key, StringComparison.Ordinal);
+        Assert.Empty(result.Reports.Opened);
+    }
+
+    [Fact]
+    public void ReportOption_SavesAnAnonymisedReportWithoutAnyQuestion()
+    {
+        var result = Run("en-US", ["--report"]);
+
+        Assert.Equal(App.ExitSuccess, result.ExitCode);
+        Assert.Empty(result.Prompt.Asked);
+        Assert.Contains("192.168.1.xxx", Assert.Single(result.Reports.Saved).Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReportThatCannotBeSaved_IsExplained_AndFailsTheRun()
+    {
+        var result = RunWith(new FakeReportStore(new UnauthorizedAccessException("Access denied")), "en-US", ["--report"]);
+
+        Assert.Equal(App.ExitReportFailed, result.ExitCode);
+        Assert.Contains("could not be saved: Access denied", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
