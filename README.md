@@ -90,14 +90,15 @@ correctly, unlike tools based on WMI. Drive serial numbers are never read.
 
 Get the latest `Diagnosta-vX.Y.Z-win-x64.exe` from the
 [Releases page](https://github.com/Tyzoo7/diagnosta/releases). It is a single file of
-about 14 MB and needs no installation or .NET runtime.
+about 14 MB and needs no installation or .NET runtime. It runs on 64-bit Windows 10 and 11.
 
 1. Open a terminal in the download folder and run `.\Diagnosta-v0.5.0-win-x64.exe`
    (use the name of the version you downloaded). Double-clicking also works: the window
    stays open until you press Esc or close it.
 2. Optionally, check that the file is genuine by comparing
    `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` with the value in `SHA256SUMS.txt`
-   from the same release.
+   from the same release. Releases made while the repository is public can also be
+   checked with `gh attestation verify` (see [SECURITY.md](SECURITY.md)).
 
 The exe is not code-signed yet, so Windows SmartScreen may warn the first time you run it.
 Versions below 1.0 are marked as pre-releases.
@@ -138,6 +139,7 @@ dotnet run --project src/Diagnosta   # start the app
 3. The workflow checks the input (format, matches `<Version>`, not released before),
    runs the tests, builds the exe, and publishes a GitHub release with the exe and
    `SHA256SUMS.txt`. GitHub creates the tag `v0.5.0` on the exact commit that was built.
+   Once the repository is public, the workflow also adds a build provenance attestation.
 
 ## Project structure
 
@@ -149,8 +151,13 @@ src/Diagnosta/            The application
   Localization/           Translations (Strings.resx = English, Strings.de.resx = German)
   Ui/                     Console output
 tests/Diagnosta.Tests/    Automated tests (xUnit)
-.github/workflows/        CI: builds and tests on Windows for every change
+.github/workflows/        CI (build and test on Windows), Release, CodeQL
 ```
+
+## Security
+
+Please report security problems privately, not as a public issue. See
+[SECURITY.md](SECURITY.md) for how, and for what Diagnosta does and does not do.
 
 ## License
 
