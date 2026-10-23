@@ -87,7 +87,10 @@ internal static unsafe partial class Dxgi
             return null;
         }
 
-        var name = new string(desc.Description).Trim();
+        // Read at most the 128 characters of the field, even if Windows forgot the closing zero.
+        var description = new ReadOnlySpan<char>(desc.Description, 128);
+        var end = description.IndexOf('\0');
+        var name = new string(end >= 0 ? description[..end] : description).Trim();
         var memory = (ulong)desc.DedicatedVideoMemory;
         var shared = (ulong)desc.SharedSystemMemory;
         var (driverVersion, driverDate) = GpuDrivers.Find(desc.VendorId, desc.DeviceId);
