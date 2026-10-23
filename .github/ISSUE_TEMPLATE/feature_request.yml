@@ -1,0 +1,22 @@
+name: Idea for a new check
+description: Suggest something Diagnosta should check or explain.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Which problem would it help with?
+      description: For example "PCs that are slow after Windows updates".
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should Diagnosta show or explain?
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Diagnosta only reads information, needs no admin rights and never goes online.
+        Ideas that need any of these may not fit.

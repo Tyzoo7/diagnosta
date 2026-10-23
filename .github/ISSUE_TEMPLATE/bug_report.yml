@@ -1,0 +1,40 @@
+name: Bug report
+description: Something shows wrong values, crashes or looks broken.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! Please **do not** paste personal details such as user names,
+        computer names or full IP addresses. Security problems go through
+        [private reporting](https://github.com/Tyzoo7/diagnosta/security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Diagnosta version
+      description: Shown at the top of the window, or run `Diagnosta.exe --version`.
+      placeholder: 1.0.0 (abc1234)
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: Shown in the Windows panel of Diagnosta.
+      placeholder: Windows 11 Pro 24H2 (Build 26100)
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot or support report (optional)
+      description: |
+        A screenshot of the problem helps a lot. The anonymised support report is fine too,
+        but please read it before attaching.

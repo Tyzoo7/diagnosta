@@ -8,6 +8,7 @@ on:
   pull_request:
   schedule:
     - cron: "17 4 * * 1" # every Monday, also catches newly added CodeQL rules
+  workflow_dispatch:
 
 permissions: {}
 
