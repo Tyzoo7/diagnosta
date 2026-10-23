@@ -11,6 +11,8 @@ background can understand them too.
 
 > **Status: pre-release, heading for 1.0.** Everything listed under [Features](#features) works today.
 
+![Diagnosta main menu with the Full PC check and every single check](docs/images/menu.png)
+
 ## Why another diagnostics tool?
 
 There are great specialised tools: WizTree for disk space, CrystalDiskInfo for drive
@@ -59,30 +61,7 @@ desktop, ready to attach to a ticket or e-mail. Findings come first, then every 
 
 ## What it shows today
 
-```text
-╭──────────────────────────────────────────────────────────────────────────────────╮
-│ !  2 findings – details below.                                                   │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ System ─────────────────────────────────────────────────────────────────────────╮
-│ Windows        Windows 11 Pro 24H2 (Build 26100.2314)                            │
-│ Processor      AMD Ryzen 5 7600X 6-Core Processor (6 cores, 12 threads)          │
-│ Memory (RAM)   12 GB of 32 GB in use (38 %)                                      │
-│                ███████████░░░░░░░░░░░░░░░░░░░                                    │
-│ Graphics       NVIDIA GeForce RTX 4070 (12 GB dedicated memory)                  │
-│ Since restart  23 days, 4 h                                                      │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ Drives ─────────────────────────────────────────────────────────────────────────╮
-│ C:      Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                             │
-│         █████████████████░░░░░░░░░░░░░ 412 GB free of 931 GB (56 % used)         │
-│ Health  Samsung SSD 980 PRO 1TB  ✓ Healthy                                       │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ Findings ───────────────────────────────────────────────────────────────────────╮
-│ ! This PC has not been restarted for 23 days. A restart finishes pending updates │
-│   and often fixes slowness.                                                      │
-│ i Fast Startup is on, so "Shut down" does not really restart Windows. Use        │
-│   "Restart" instead.                                                             │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-```
+![Result of a check: status line and the System panel with Windows, processor, memory and graphics](docs/images/system.png)
 
 Everything is read with built-in Windows interfaces (registry, kernel32, DXGI, storage IOCTLs, WMI).
 No admin rights and no extra packages are needed. Graphics memory above 4 GB is shown

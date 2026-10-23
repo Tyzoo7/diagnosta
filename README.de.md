@@ -11,6 +11,8 @@ auch Menschen ohne Technikwissen sie verstehen.
 
 > **Status: Vorabversion auf dem Weg zu 1.0.** Alles unter [Funktionen](#funktionen) funktioniert heute schon.
 
+![Hauptmenü von Diagnosta mit der vollständigen Prüfung und allen Einzelprüfungen](docs/images/menu.png)
+
 ## Warum noch ein Diagnose-Tool?
 
 Es gibt großartige Spezial-Tools: WizTree für Speicherplatz, CrystalDiskInfo für die
@@ -61,30 +63,9 @@ danach alle Details.
 
 ## Was es heute zeigt
 
-```text
-╭──────────────────────────────────────────────────────────────────────────────────╮
-│ !  2 Hinweise – Details siehe unten.                                             │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ System ─────────────────────────────────────────────────────────────────────────╮
-│ Windows                Windows 11 Pro 24H2 (Build 26100.2314)                    │
-│ Prozessor              AMD Ryzen 5 7600X 6-Core Processor (6 Kerne, 12 Threads)  │
-│ Arbeitsspeicher (RAM)  12 GB von 32 GB belegt (38 %)                             │
-│                        ███████████░░░░░░░░░░░░░░░░░░░                            │
-│ Grafik                 NVIDIA GeForce RTX 4070 (12 GB eigener Speicher)          │
-│ Seit Neustart          23 Tage, 4 Std.                                           │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ Laufwerke ──────────────────────────────────────────────────────────────────────╮
-│ C:       Windows · NVMe SSD · Samsung SSD 980 PRO 1TB                            │
-│          █████████████████░░░░░░░░░░░░░ 412 GB frei von 931 GB (56 % belegt)     │
-│ Zustand  Samsung SSD 980 PRO 1TB  ✓ Gesund                                       │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-╭─ Hinweise ───────────────────────────────────────────────────────────────────────╮
-│ ! Dieser PC wurde seit 23 Tagen nicht neu gestartet. Ein Neustart schließt       │
-│   ausstehende Updates ab und behebt oft Langsamkeit.                             │
-│ i Schnellstart ist aktiv, deshalb startet „Herunterfahren“ Windows nicht         │
-│   wirklich neu. Nutze stattdessen „Neu starten“.                                 │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-```
+![Ergebnis einer Prüfung: Statuszeile und der Kasten System mit Windows, Prozessor, Arbeitsspeicher und Grafik](docs/images/system.png)
+
+_Die Bilder zeigen die englische Ansicht; auf Deutsch sieht alles gleich aus._
 
 Alle Werte werden über Windows-eigene Schnittstellen gelesen (Registry, kernel32, DXGI,
 Speicher-IOCTLs, WMI). Dafür braucht es weder Admin-Rechte noch zusätzliche Pakete. Grafikspeicher
