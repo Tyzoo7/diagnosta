@@ -9,7 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: pre-release, heading for 1.0.** Everything listed under [Features](#features) works today.
+> **Version 1.0.** Everything listed under [Features](#features) works today; more checks are [planned](#planned-after-10).
 
 ![Diagnosta main menu with the Full PC check and every single check](docs/images/menu.png)
 
@@ -73,16 +73,16 @@ Get the latest `Diagnosta-vX.Y.Z-win-x64.exe` from the
 [Releases page](https://github.com/Tyzoo7/diagnosta/releases). It is a single file of
 about 14 MB and needs no installation or .NET runtime. It runs on 64-bit Windows 10 and 11.
 
-1. Open a terminal in the download folder and run `.\Diagnosta-v0.5.0-win-x64.exe`
+1. Open a terminal in the download folder and run `.\Diagnosta-v1.0.0-win-x64.exe`
    (use the name of the version you downloaded). Double-clicking also works: the window
    stays open until you press Esc or close it.
 2. Optionally, check that the file is genuine by comparing
-   `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` with the value in `SHA256SUMS.txt`
+   `Get-FileHash .\Diagnosta-v1.0.0-win-x64.exe` with the value in `SHA256SUMS.txt`
    from the same release. Releases made while the repository is public can also be
    checked with `gh attestation verify` (see [SECURITY.md](SECURITY.md)).
 
-The exe is not code-signed yet, so Windows SmartScreen may warn the first time you run it.
-Versions below 1.0 are marked as pre-releases.
+The exe is not code-signed yet, so Windows SmartScreen or your antivirus may warn the first time you run it.
+Signing is planned for 1.0.1.
 
 Every CI run also builds a test exe (**Actions → CI → Artifacts**), for trying out
 changes before they are released.
@@ -116,10 +116,10 @@ dotnet run --project src/Diagnosta   # start the app
 ## Releasing
 
 1. Raise `<Version>` in `src/Diagnosta/Diagnosta.csproj` in a pull request and merge it.
-2. Open **Actions → Release → Run workflow** and enter the same version, e.g. `0.5.0`.
+2. Open **Actions → Release → Run workflow** and enter the same version, e.g. `1.0.0`.
 3. The workflow checks the input (format, matches `<Version>`, not released before),
    runs the tests, builds the exe, and publishes a GitHub release with the exe and
-   `SHA256SUMS.txt`. GitHub creates the tag `v0.5.0` on the exact commit that was built.
+   `SHA256SUMS.txt`. GitHub creates the tag `v1.0.0` on the exact commit that was built.
    Once the repository is public, the workflow also adds a build provenance attestation.
 
 ## Project structure

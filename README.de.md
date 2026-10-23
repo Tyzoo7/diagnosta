@@ -9,7 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: Vorabversion auf dem Weg zu 1.0.** Alles unter [Funktionen](#funktionen) funktioniert heute schon.
+> **Version 1.0.** Alles unter [Funktionen](#funktionen) funktioniert; weitere Prüfungen sind [geplant](#geplant-nach-10).
 
 ![Hauptmenü von Diagnosta mit der vollständigen Prüfung und allen Einzelprüfungen](docs/images/menu.png)
 
@@ -79,16 +79,16 @@ Lade die neueste `Diagnosta-vX.Y.Z-win-x64.exe` von der
 einzelne Datei mit etwa 14 MB, ohne Installation und ohne .NET-Laufzeit. Sie läuft unter
 64-Bit-Windows 10 und 11.
 
-1. Öffne ein Terminal im Download-Ordner und starte `.\Diagnosta-v0.5.0-win-x64.exe`
+1. Öffne ein Terminal im Download-Ordner und starte `.\Diagnosta-v1.0.0-win-x64.exe`
    (mit dem Namen der heruntergeladenen Version). Ein Doppelklick funktioniert auch: Das
    Fenster bleibt offen, bis du Esc drückst oder es schließt.
 2. Optional kannst du prüfen, ob die Datei echt ist: Vergleiche
-   `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` mit dem Wert in `SHA256SUMS.txt`
+   `Get-FileHash .\Diagnosta-v1.0.0-win-x64.exe` mit dem Wert in `SHA256SUMS.txt`
    aus demselben Release. Releases aus der Zeit, in der das Repository öffentlich ist,
    lassen sich zusätzlich mit `gh attestation verify` prüfen (siehe [SECURITY.md](SECURITY.md)).
 
-Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start
-eventuell. Versionen unter 1.0 sind als Vorabversion (Pre-release) markiert.
+Die .exe ist noch nicht code-signiert, deshalb warnen Windows SmartScreen oder dein Virenscanner
+beim ersten Start eventuell. Die Signierung ist für 1.0.1 geplant.
 
 Jeder CI-Lauf baut außerdem eine Test-.exe (**Actions → CI → Artifacts**), um Änderungen
 vor einem Release auszuprobieren.
@@ -122,10 +122,10 @@ dotnet run --project src/Diagnosta   # Programm starten
 ## Release erstellen
 
 1. `<Version>` in `src/Diagnosta/Diagnosta.csproj` per Pull Request erhöhen und mergen.
-2. **Actions → Release → Run workflow** öffnen und dieselbe Version eingeben, z. B. `0.5.0`.
+2. **Actions → Release → Run workflow** öffnen und dieselbe Version eingeben, z. B. `1.0.0`.
 3. Der Workflow prüft die Eingabe (Format, passt zu `<Version>`, noch nicht veröffentlicht),
    führt die Tests aus, baut die .exe und veröffentlicht ein GitHub-Release mit der .exe und
-   `SHA256SUMS.txt`. Den Tag `v0.5.0` setzt GitHub auf genau den Commit, der gebaut wurde.
+   `SHA256SUMS.txt`. Den Tag `v1.0.0` setzt GitHub auf genau den Commit, der gebaut wurde.
    Sobald das Repository öffentlich ist, fügt der Workflow auch einen Herkunftsnachweis
    (Build Provenance Attestation) hinzu.
 
