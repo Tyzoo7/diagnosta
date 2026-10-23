@@ -220,7 +220,7 @@ internal static class SupportReport
     };
 
     /// <summary>HTML-encodes text that came from the system (program names, drive labels, …).</summary>
-    private static string E(string text) => WebUtility.HtmlEncode(text);
+    private static string E(string text) => WebUtility.HtmlEncode(Describe.Printable(text));
 
     private static string F(string template, params object[] values) => string.Format(CultureInfo.CurrentCulture, template, values);
 }

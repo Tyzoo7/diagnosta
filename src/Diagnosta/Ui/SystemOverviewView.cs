@@ -159,11 +159,11 @@ internal static class SystemOverviewView
         foreach (var app in apps.OrderByDescending(a => a.Enabled))
         {
             grid.AddRow(
-                new Markup(app.Enabled ? Markup.Escape(app.Name) : $"[{Quiet.ToMarkup()}]{Markup.Escape(app.Name)}[/]"),
+                new Markup(app.Enabled ? Escape(app.Name) : $"[{Quiet.ToMarkup()}]{Escape(app.Name)}[/]"),
                 QuietText(Describe.StartupDetail(app)) ?? Text(string.Empty));
         }
 
-        return new Rows(new Markup($"[bold]{Markup.Escape(summary)}[/]"), BlankLine(), grid);
+        return new Rows(new Markup($"[bold]{Escape(summary)}[/]"), BlankLine(), grid);
     }
 
     /// <summary>The five programs using the most memory, then the five using the most CPU.</summary>
@@ -194,18 +194,18 @@ internal static class SystemOverviewView
         }
 
         return new Rows(
-            new Markup($"[bold]{Markup.Escape(Strings.ProcessesTopMemory)}[/]"),
+            new Markup($"[bold]{Escape(Strings.ProcessesTopMemory)}[/]"),
             memory,
             BlankLine(),
-            new Markup($"[bold]{Markup.Escape(Strings.ProcessesTopCpu)}[/]"),
+            new Markup($"[bold]{Escape(Strings.ProcessesTopCpu)}[/]"),
             cpu);
     }
 
     /// <summary>"chrome (12×)" when a program runs as several processes.</summary>
     private static Markup ProcessName(ProcessUsage process) =>
         new(process.Instances > 1
-            ? $"{Markup.Escape(process.Name)} [{Quiet.ToMarkup()}]({process.Instances}×)[/]"
-            : Markup.Escape(process.Name));
+            ? $"{Escape(process.Name)} [{Quiet.ToMarkup()}]({process.Instances}×)[/]"
+            : Escape(process.Name));
 
     private static Panel StatusPanel(List<Finding> findings)
     {
@@ -216,7 +216,7 @@ internal static class SystemOverviewView
             ? ("✓", Color.Green)
             : Look(findings.Max(f => f.Severity));
 
-        return new Panel(new Markup($"[bold {color.ToMarkup()}]{symbol}  {Markup.Escape(text)}[/]"))
+        return new Panel(new Markup($"[bold {color.ToMarkup()}]{symbol}  {Escape(text)}[/]"))
             .RoundedBorder()
             .BorderColor(color);
     }
@@ -224,7 +224,7 @@ internal static class SystemOverviewView
     private static Panel Section(string title, IRenderable content, int width) =>
         new Panel(content)
         {
-            Header = new PanelHeader($"[bold deepskyblue1] {Markup.Escape(title)} [/]"),
+            Header = new PanelHeader($"[bold deepskyblue1] {Escape(title)} [/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Grey),
             Padding = new Padding(1, 0, 1, 0),
@@ -303,7 +303,7 @@ internal static class SystemOverviewView
             var free = Describe.DriveFree(drive);
             var color = SystemOverviewAnalyzer.IsNearlyFull(drive) ? Color.Red : drive.UsedFraction >= 0.75 ? Color.Yellow : Color.Green;
 
-            var firstLine = Markup.Escape(Describe.DriveTitle(drive))
+            var firstLine = Escape(Describe.DriveTitle(drive))
                 + (disk is null ? string.Empty : "  " + HealthBadge(disk.Health));
 
             grid.AddRow(
@@ -318,7 +318,7 @@ internal static class SystemOverviewView
         foreach (var disk in disks?.Where(d => d.DiskNumber is null || !listed.Contains(d.DiskNumber)) ?? [])
         {
             grid.AddEmptyRow();
-            grid.AddRow(Label(Strings.LabelHealth), new Markup($"{Markup.Escape(disk.Name ?? Strings.DiskUnnamed)}  {HealthBadge(disk.Health)}"));
+            grid.AddRow(Label(Strings.LabelHealth), new Markup($"{Escape(disk.Name ?? Strings.DiskUnnamed)}  {HealthBadge(disk.Health)}"));
         }
 
         return grid;
@@ -333,7 +333,7 @@ internal static class SystemOverviewView
             DiskHealth.Unhealthy => ("✗", "red bold"),
             _ => ("?", Quiet.ToMarkup()),
         };
-        return $"[{color}]{symbol} {Markup.Escape(Describe.Health(health))}[/]";
+        return $"[{color}]{symbol} {Escape(Describe.Health(health))}[/]";
     }
 
     private static Grid FindingsGrid(List<Finding> findings)
@@ -372,12 +372,14 @@ internal static class SystemOverviewView
     /// <summary>An empty Markup renders no line at all; a single space does.</summary>
     private static Markup BlankLine() => new(" ");
 
-    private static Markup Label(string label) => new($"[bold]{Markup.Escape(label)}[/]");
+    private static string Escape(string text) => Markup.Escape(Describe.Printable(text));
 
-    private static Markup Text(string? text) => new(Markup.Escape(text ?? Strings.Unknown));
+    private static Markup Label(string label) => new($"[bold]{Escape(label)}[/]");
+
+    private static Markup Text(string? text) => new(Escape(text ?? Strings.Unknown));
 
     private static Markup? QuietText(string? text) =>
-        string.IsNullOrEmpty(text) ? null : new Markup($"[{Quiet.ToMarkup()}]{Markup.Escape(text)}[/]");
+        string.IsNullOrEmpty(text) ? null : new Markup($"[{Quiet.ToMarkup()}]{Escape(text)}[/]");
 
     private static BreakdownChart UsageBar(double usedFraction, Color color) =>
         new BreakdownChart()

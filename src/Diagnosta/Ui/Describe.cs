@@ -10,6 +10,17 @@ namespace Diagnosta.Ui;
 /// </summary>
 internal static class Describe
 {
+    /// <summary>
+    /// Drops characters that could steer the terminal (escape sequences) or flip the reading
+    /// direction. Names of startup apps and programs come from other software, so they are
+    /// not trusted to be plain text.
+    /// </summary>
+    public static string Printable(string text) =>
+        text.Any(IsUnsafe) ? string.Concat(text.Where(c => !IsUnsafe(c))) : text;
+
+    private static bool IsUnsafe(char c) =>
+        char.IsControl(c) || c is >= '\u202A' and <= '\u202E' or >= '\u2066' and <= '\u2069';
+
     public static string JoinDots(params string?[] parts) =>
         string.Join(" · ", parts.Where(p => !string.IsNullOrEmpty(p)));
 

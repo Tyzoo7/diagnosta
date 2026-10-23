@@ -41,7 +41,7 @@ internal static partial class Kernel32
             }
 
             var cores = 0;
-            for (var offset = 0; offset < length;)
+            for (var offset = 0; offset + (2 * sizeof(int)) <= length;)
             {
                 // Each record starts with: int Relationship, uint Size.
                 var size = Marshal.ReadInt32(buffer, offset + sizeof(int));
