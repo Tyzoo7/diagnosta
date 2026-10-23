@@ -93,14 +93,16 @@ Seriennummern von Laufwerken werden nie ausgelesen.
 
 Lade die neueste `Diagnosta-vX.Y.Z-win-x64.exe` von der
 [Releases-Seite](https://github.com/Tyzoo7/diagnosta/releases) herunter. Es ist eine
-einzelne Datei mit etwa 14 MB, ohne Installation und ohne .NET-Laufzeit.
+einzelne Datei mit etwa 14 MB, ohne Installation und ohne .NET-Laufzeit. Sie läuft unter
+64-Bit-Windows 10 und 11.
 
 1. Öffne ein Terminal im Download-Ordner und starte `.\Diagnosta-v0.5.0-win-x64.exe`
    (mit dem Namen der heruntergeladenen Version). Ein Doppelklick funktioniert auch: Das
    Fenster bleibt offen, bis du Esc drückst oder es schließt.
 2. Optional kannst du prüfen, ob die Datei echt ist: Vergleiche
    `Get-FileHash .\Diagnosta-v0.5.0-win-x64.exe` mit dem Wert in `SHA256SUMS.txt`
-   aus demselben Release.
+   aus demselben Release. Releases aus der Zeit, in der das Repository öffentlich ist,
+   lassen sich zusätzlich mit `gh attestation verify` prüfen (siehe [SECURITY.md](SECURITY.md)).
 
 Die .exe ist noch nicht code-signiert, deshalb warnt Windows SmartScreen beim ersten Start
 eventuell. Versionen unter 1.0 sind als Vorabversion (Pre-release) markiert.
@@ -141,6 +143,8 @@ dotnet run --project src/Diagnosta   # Programm starten
 3. Der Workflow prüft die Eingabe (Format, passt zu `<Version>`, noch nicht veröffentlicht),
    führt die Tests aus, baut die .exe und veröffentlicht ein GitHub-Release mit der .exe und
    `SHA256SUMS.txt`. Den Tag `v0.5.0` setzt GitHub auf genau den Commit, der gebaut wurde.
+   Sobald das Repository öffentlich ist, fügt der Workflow auch einen Herkunftsnachweis
+   (Build Provenance Attestation) hinzu.
 
 ## Projektstruktur
 
@@ -152,8 +156,13 @@ src/Diagnosta/            Das Programm
   Localization/           Übersetzungen (Strings.resx = Englisch, Strings.de.resx = Deutsch)
   Ui/                     Ausgabe in der Konsole
 tests/Diagnosta.Tests/    Automatische Tests (xUnit)
-.github/workflows/        CI: baut und testet bei jeder Änderung auf Windows
+.github/workflows/        CI (bauen und testen auf Windows), Release, CodeQL
 ```
+
+## Sicherheit
+
+Bitte melde Sicherheitsprobleme privat, nicht als öffentliches Issue. Wie das geht und was
+Diagnosta tut und nicht tut, steht in [SECURITY.md](SECURITY.md) (auf Englisch).
 
 ## Lizenz
 
