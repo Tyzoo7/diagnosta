@@ -17,8 +17,13 @@ internal static class NetworkAdapters
             .OrderBy(a => a.Kind == NetworkKind.Other ? 1 : 0)
             .ToList();
 
+    /// <summary>
+    /// Extra adapters a PC creates for its own VMs, VPN tools and Bluetooth. Matched precisely:
+    /// inside a VM the real network card is called e.g. "Microsoft Hyper-V Network Adapter",
+    /// and hiding that would wrongly report "no network".
+    /// </summary>
     private static readonly string[] VirtualAdapterNames =
-        ["Hyper-V", "VMware", "VirtualBox", "Virtual Ethernet", "WSL", "Loopback", "TAP-Windows", "Bluetooth"];
+        ["Hyper-V Virtual Ethernet Adapter", "VirtualBox Host-Only", "VMware Virtual Ethernet Adapter", "WSL", "Loopback", "TAP-Windows", "Bluetooth"];
 
     /// <summary>Hides loopback, tunnels and the virtual adapters of VMs and VPN tools.</summary>
     internal static bool IsRelevant(NetworkInterfaceType type, string description) =>
