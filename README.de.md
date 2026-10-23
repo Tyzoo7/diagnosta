@@ -37,7 +37,18 @@ Genau dafür ist Diagnosta gebaut:
 - [x] Autostart-Programme wie im Task-Manager
 - [x] Laufende Programme mit dem meisten RAM- und CPU-Verbrauch
 - [ ] Absturz-Verlauf: Bluescreens und unerwartete Neustarts
-- [ ] Bericht-Export (HTML), standardmäßig anonymisiert
+- [x] Support-Bericht: eine HTML-Datei zum Anhängen an ein Ticket, standardmäßig anonymisiert
+
+## Support-Bericht
+
+**Support-Bericht erstellen** im Menü (oder `diagnosta --report`) speichert eine HTML-Datei auf
+dem Desktop, die man an ein Ticket oder eine E-Mail anhängen kann. Zuerst kommen die Hinweise,
+danach alle Details.
+
+- **Standardmäßig anonymisiert:** Die eigene IP-Adresse des PCs wird gekürzt (`192.168.1.xxx`),
+  Laufwerksnamen werden weggelassen. Benutzer- und PC-Namen liest Diagnosta gar nicht erst aus.
+- **Sicher zu öffnen:** Alle Werte sind HTML-kodiert, und eine Content-Security-Policy verbietet
+  Skripte und Anfragen nach außen. Die Datei enthält kein JavaScript und lädt nichts aus dem Internet.
 
 ## Grundsätze
 
@@ -106,6 +117,7 @@ Bereich wählen und mit Enter bestätigen.
 ```text
 diagnosta                 Menü öffnen
 diagnosta --full          Kompletten PC-Check sofort ausgeben (auch bei umgeleiteter Ausgabe)
+diagnosta --report        Anonymisierten Support-Bericht (HTML) auf dem Desktop speichern
 diagnosta --lang de       Auf Deutsch (de) oder Englisch (en) starten
 diagnosta --help          Alle Optionen anzeigen
 diagnosta --version       Version anzeigen

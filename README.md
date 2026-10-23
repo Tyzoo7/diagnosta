@@ -36,7 +36,17 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 - [x] Startup programs, as listed in Task Manager
 - [x] Running programs using the most memory and CPU
 - [ ] Crash history: blue screens and unexpected shutdowns
-- [ ] Report export (HTML), anonymised by default
+- [x] Support report: one HTML file to attach to a ticket, anonymised by default
+
+## Support report
+
+**Create support report** in the menu (or `diagnosta --report`) saves one HTML file to the
+desktop, ready to attach to a ticket or e-mail. Findings come first, then every detail.
+
+- **Anonymised by default:** the PC's own IP address is shortened (`192.168.1.xxx`) and drive
+  names are left out. User and computer names are never read in the first place.
+- **Safe to open:** all values are HTML-encoded, and a Content-Security-Policy blocks scripts and
+  any outside requests. The file contains no JavaScript and loads nothing from the internet.
 
 ## Principles
 
@@ -104,6 +114,7 @@ confirm with Enter.
 ```text
 diagnosta                 Open the menu
 diagnosta --full          Print the full PC check right away (also used when output is redirected)
+diagnosta --report        Save an anonymised support report (HTML) to the desktop
 diagnosta --lang de       Start in German (de) or English (en)
 diagnosta --help          Show all options
 diagnosta --version       Show the version

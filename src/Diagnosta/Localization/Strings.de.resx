@@ -72,6 +72,54 @@
   <data name="AboutLicense" xml:space="preserve">
     <value>Lizenz</value>
   </data>
+  <data name="HelpOptionReport" xml:space="preserve">
+    <value>Anonymisierten Support-Bericht auf dem Desktop speichern</value>
+  </data>
+  <data name="MenuReport" xml:space="preserve">
+    <value>Support-Bericht erstellen</value>
+  </data>
+  <data name="ReportTitle" xml:space="preserve">
+    <value>Diagnosta – PC-Bericht</value>
+  </data>
+  <data name="ReportFileName" xml:space="preserve">
+    <value>Diagnosta-Bericht</value>
+  </data>
+  <data name="ReportCreated" xml:space="preserve">
+    <value>Erstellt am {0} mit Diagnosta {1}</value>
+  </data>
+  <data name="ReportAnonymized" xml:space="preserve">
+    <value>Persönliche Details ausgeblendet: Die eigene IP-Adresse des PCs ist gekürzt, Laufwerksnamen sind weggelassen. Benutzer- und PC-Namen liest Diagnosta nie aus.</value>
+  </data>
+  <data name="ReportNotAnonymized" xml:space="preserve">
+    <value>Nicht anonymisiert: enthält vollständige IP-Adressen und Laufwerksnamen.</value>
+  </data>
+  <data name="ReportFooter" xml:space="preserve">
+    <value>Diagnosta liest nur Informationen und sendet nichts. github.com/Tyzoo7/diagnosta</value>
+  </data>
+  <data name="ReportAskAnonymize" xml:space="preserve">
+    <value>Persönliche Details im Bericht ausblenden?</value>
+  </data>
+  <data name="ReportAnonymizeYes" xml:space="preserve">
+    <value>Ja, ausblenden (empfohlen)</value>
+  </data>
+  <data name="ReportAnonymizeNo" xml:space="preserve">
+    <value>Nein, alles anzeigen</value>
+  </data>
+  <data name="ReportSaved" xml:space="preserve">
+    <value>Bericht gespeichert: {0}</value>
+  </data>
+  <data name="ReportSaveFailed" xml:space="preserve">
+    <value>Der Bericht konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="ReportAskOpen" xml:space="preserve">
+    <value>Bericht jetzt öffnen?</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Nein</value>
+  </data>
   <data name="HelpOptionLanguage" xml:space="preserve">
     <value>Sprache festlegen (de, en). Standard: deine Windows-Sprache</value>
   </data>

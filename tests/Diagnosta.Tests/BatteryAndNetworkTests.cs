@@ -41,6 +41,11 @@ public class BatteryAndNetworkTests
     [InlineData(NetworkInterfaceType.Ethernet, "Hyper-V Virtual Ethernet Adapter", false)]
     [InlineData(NetworkInterfaceType.Ethernet, "VirtualBox Host-Only Ethernet Adapter", false)]
     [InlineData(NetworkInterfaceType.Ethernet, "Bluetooth Device (Personal Area Network)", false)]
+    [InlineData(NetworkInterfaceType.Ethernet, "VMware Virtual Ethernet Adapter for VMnet8", false)]
+    // Inside a VM these are the real network cards and must stay visible.
+    [InlineData(NetworkInterfaceType.Ethernet, "Microsoft Hyper-V Network Adapter", true)]
+    [InlineData(NetworkInterfaceType.Ethernet, "vmxnet3 Ethernet Adapter", true)]
+    [InlineData(NetworkInterfaceType.Ethernet, "Intel(R) PRO/1000 MT Desktop Adapter", true)] // VirtualBox guest
     public void VirtualAndInternalAdapters_AreHidden(NetworkInterfaceType type, string description, bool expected)
     {
         Assert.Equal(expected, NetworkAdapters.IsRelevant(type, description));

@@ -88,14 +88,7 @@ internal static class SystemOverviewView
         }
 
         var grid = NewTwoColumnGrid();
-        var charge = battery.ChargePercent is { } percent ? Formatting.Percent(percent / 100.0) : Strings.Unknown;
-        var power = battery.PluggedIn switch
-        {
-            true => Strings.BatteryPluggedIn,
-            false => Strings.BatteryOnBattery,
-            null => null,
-        };
-        grid.AddRow(Label(Strings.BatteryCharge), Text(JoinDots(charge, power)));
+        grid.AddRow(Label(Strings.BatteryCharge), Text(Describe.BatteryCharge(battery)));
 
         grid.AddEmptyRow();
         if (battery.Health is { } health)
@@ -103,16 +96,12 @@ internal static class SystemOverviewView
             var color = health < SystemOverviewAnalyzer.BatteryReplaceHealth ? Color.Red
                 : health < SystemOverviewAnalyzer.BatteryWornHealth ? Color.Yellow
                 : Color.Green;
-            var capacity = string.Format(CultureInfo.CurrentCulture, Strings.BatteryCapacity,
-                Formatting.WattHours(battery.FullChargeCapacity!.Value), Formatting.WattHours(battery.DesignedCapacity!.Value));
-            var cycles = battery.CycleCount is { } count ? string.Format(CultureInfo.CurrentCulture, Strings.BatteryCycles, count) : null;
-
             grid.AddRow(
                 Label(Strings.BatteryHealth),
                 new Rows(
-                    Text(string.Format(CultureInfo.CurrentCulture, Strings.BatteryHealthValue, Formatting.Percent(health))),
+                    Text(Describe.BatteryHealth(health)),
                     UsageBar(health, color),
-                    QuietText(JoinDots(capacity, cycles, battery.Chemistry))!));
+                    QuietText(Describe.BatteryDetails(battery)) ?? BlankLine()));
         }
         else
         {
@@ -143,25 +132,13 @@ internal static class SystemOverviewView
             }
 
             var adapter = adapters[i];
-            var kind = adapter.Kind switch
-            {
-                NetworkKind.WiFi => Strings.NetworkWiFi,
-                NetworkKind.Ethernet => Strings.NetworkEthernet,
-                _ => Strings.NetworkOther,
-            };
-            var status = JoinDots(Strings.NetworkConnected, adapter.SpeedBitsPerSecond is { } speed ? Formatting.BitRate(speed) : null);
-            var addresses = JoinDots(
-                adapter.IPv4Addresses.Count > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkIp, string.Join(", ", adapter.IPv4Addresses)) : null,
-                adapter.Gateway is { } gateway ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkRouter, gateway) : null,
-                adapter.DnsServers.Count > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.NetworkDns, string.Join(", ", adapter.DnsServers)) : null);
-
-            var lines = new List<IRenderable> { Text(adapter.Description), QuietText(status)! };
-            if (QuietText(addresses) is { } addressLine)
+            var lines = new List<IRenderable> { Text(adapter.Description), QuietText(Describe.NetworkStatus(adapter))! };
+            if (QuietText(Describe.NetworkAddresses(adapter)) is { } addressLine)
             {
                 lines.Add(addressLine);
             }
 
-            grid.AddRow(Label(kind), new Rows(lines));
+            grid.AddRow(Label(Describe.NetworkKindName(adapter.Kind)), new Rows(lines));
         }
 
         return grid;
@@ -175,23 +152,15 @@ internal static class SystemOverviewView
             return Text(Strings.Unknown);
         }
 
-        var enabled = apps.Count(a => a.Enabled);
-        var summary = string.Format(CultureInfo.CurrentCulture, enabled == 1 ? Strings.StartupSummaryOne : Strings.StartupSummary, enabled);
-        var disabled = apps.Count - enabled;
-        if (disabled > 0)
-        {
-            summary += " · " + string.Format(CultureInfo.CurrentCulture, Strings.StartupDisabledCount, disabled);
-        }
+        var summary = Describe.StartupSummary(apps);
 
         // Headings sit above the grid, so they don't stretch the name column.
         var grid = NewTwoColumnGrid();
         foreach (var app in apps.OrderByDescending(a => a.Enabled))
         {
-            var scope = app.Scope == StartupScope.CurrentUser ? Strings.StartupScopeUser : Strings.StartupScopeAll;
-            var detail = JoinDots(app.FileName, scope, app.Enabled ? null : Strings.StartupDisabled);
             grid.AddRow(
                 new Markup(app.Enabled ? Markup.Escape(app.Name) : $"[{Quiet.ToMarkup()}]{Markup.Escape(app.Name)}[/]"),
-                QuietText(detail) ?? Text(string.Empty));
+                QuietText(Describe.StartupDetail(app)) ?? Text(string.Empty));
         }
 
         return new Rows(new Markup($"[bold]{Markup.Escape(summary)}[/]"), BlankLine(), grid);
@@ -218,9 +187,7 @@ internal static class SystemOverviewView
             var grid = NewTwoColumnGrid();
             foreach (var p in busy)
             {
-                // Below 1 % a rounded "0 %" would look like the program does nothing at all.
-                var share = p.CpuPercent!.Value < 1 ? "< 1 %" : Formatting.Percent(p.CpuPercent.Value / 100);
-                grid.AddRow(ProcessName(p), Text(share));
+                grid.AddRow(ProcessName(p), Text(Describe.ProcessCpu(p.CpuPercent!.Value)));
             }
 
             cpu = grid;
@@ -242,12 +209,7 @@ internal static class SystemOverviewView
 
     private static Panel StatusPanel(List<Finding> findings)
     {
-        var text = findings.Count switch
-        {
-            0 => Strings.StatusAllGood,
-            1 => Strings.StatusOneFinding,
-            _ => string.Format(CultureInfo.CurrentCulture, Strings.StatusFindings, findings.Count),
-        };
+        var text = Describe.Status(findings.Count);
 
         // The status takes the look of the most serious finding.
         var (symbol, color) = findings.Count == 0
@@ -293,12 +255,12 @@ internal static class SystemOverviewView
 
         if (areas.Contains(CheckArea.Windows))
         {
-            var (name, detail) = WindowsText(overview.Windows);
+            var (name, detail) = Describe.Windows(overview.Windows);
             Item(Strings.LabelWindows, name, QuietText(detail));
             Item(Strings.LabelUptime, Formatting.Uptime(overview.Uptime));
             if (overview.RestartPending is { } pending)
             {
-                Item(Strings.LabelUpdates, pending ? Strings.RestartPending : Strings.RestartNotNeeded);
+                Item(Strings.LabelUpdates, Describe.Restart(pending));
             }
         }
 
@@ -338,12 +300,10 @@ internal static class SystemOverviewView
 
             var drive = drives[i];
             var disk = disks?.FirstOrDefault(d => d.DiskNumber is not null && d.DiskNumber == drive.DiskNumber);
-            var details = string.Join(" · ", new[] { drive.IsSystemDrive ? "Windows" : drive.Label, DeviceText(drive) }
-                .Where(p => !string.IsNullOrEmpty(p)));
-            var free = string.Format(CultureInfo.CurrentCulture, Strings.DriveFree, Formatting.Bytes(drive.FreeBytes), Formatting.Bytes(drive.TotalBytes), Formatting.Percent(drive.UsedFraction));
+            var free = Describe.DriveFree(drive);
             var color = SystemOverviewAnalyzer.IsNearlyFull(drive) ? Color.Red : drive.UsedFraction >= 0.75 ? Color.Yellow : Color.Green;
 
-            var firstLine = Markup.Escape(details.Length == 0 ? Strings.Unknown : details)
+            var firstLine = Markup.Escape(Describe.DriveTitle(drive))
                 + (disk is null ? string.Empty : "  " + HealthBadge(disk.Health));
 
             grid.AddRow(
@@ -364,13 +324,17 @@ internal static class SystemOverviewView
         return grid;
     }
 
-    private static string HealthBadge(DiskHealth health) => health switch
+    private static string HealthBadge(DiskHealth health)
     {
-        DiskHealth.Healthy => $"[green bold]✓ {Markup.Escape(Strings.HealthHealthy)}[/]",
-        DiskHealth.Warning => $"[yellow bold]! {Markup.Escape(Strings.HealthWarning)}[/]",
-        DiskHealth.Unhealthy => $"[red bold]✗ {Markup.Escape(Strings.HealthUnhealthy)}[/]",
-        _ => $"[{Quiet.ToMarkup()}]? {Markup.Escape(Strings.Unknown)}[/]",
-    };
+        var (symbol, color) = health switch
+        {
+            DiskHealth.Healthy => ("✓", "green bold"),
+            DiskHealth.Warning => ("!", "yellow bold"),
+            DiskHealth.Unhealthy => ("✗", "red bold"),
+            _ => ("?", Quiet.ToMarkup()),
+        };
+        return $"[{color}]{symbol} {Markup.Escape(Describe.Health(health))}[/]";
+    }
 
     private static Grid FindingsGrid(List<Finding> findings)
     {
@@ -423,43 +387,14 @@ internal static class SystemOverviewView
             .AddItem(Strings.MemoryFree, Math.Round((1 - usedFraction) * 100, 1), Color.Grey23);
 
     /// <summary>"Windows 11 Pro" and "Version 24H2 · Build 26100.2314".</summary>
-    private static (string? Name, string? Detail) WindowsText(WindowsInfo? windows)
-    {
-        if (windows is null)
-        {
-            return (null, null);
-        }
-
-        var name = string.Join(' ', new[] { windows.Name, windows.Edition }.Where(p => !string.IsNullOrEmpty(p)));
-        var build = windows.UpdateRevision is { } ubr
-            ? $"{windows.Build}.{ubr}"
-            : windows.Build.ToString(CultureInfo.InvariantCulture);
-        var parts = new[]
-        {
-            windows.DisplayVersion is null ? null : string.Format(CultureInfo.CurrentCulture, Strings.WindowsVersion, windows.DisplayVersion),
-            string.Format(CultureInfo.CurrentCulture, Strings.WindowsBuild, build),
-        };
-        return (name, string.Join(" · ", parts.Where(p => p is not null)));
-    }
-
-    /// <summary>"4 cores · 8 threads · base clock 1.60 GHz", then the current load with a bar.</summary>
+    /// <summary>"4 cores · 8 threads · base clock 1.6 GHz", then the current load with a bar.</summary>
     private static Rows CpuDetails(CpuInfo cpu)
     {
-        var counts = cpu.PhysicalCores is { } cores
-            ? string.Format(CultureInfo.CurrentCulture, Strings.CpuCoresThreads, cores, cpu.LogicalProcessors)
-            : string.Format(CultureInfo.CurrentCulture, Strings.CpuThreads, cpu.LogicalProcessors);
-        var clock = cpu.BaseMhz is { } mhz and > 0
-            ? string.Format(CultureInfo.CurrentCulture, Strings.CpuBaseClock, Formatting.Gigahertz(mhz))
-            : null;
-
-        var lines = new List<IRenderable> { QuietText(JoinDots(counts, clock))! };
+        var lines = new List<IRenderable> { QuietText(Describe.CpuSummary(cpu))! };
         if (cpu.UsagePercent is { } usage)
         {
-            var fraction = usage / 100;
             var color = usage >= SystemOverviewAnalyzer.CpuBusyPercent ? Color.Yellow : Color.Green;
-            lines.Add(new Columns(
-                UsageBar(fraction, color),
-                QuietText(string.Format(CultureInfo.CurrentCulture, Strings.CpuUsage, Formatting.Percent(fraction)))!).Collapse());
+            lines.Add(new Columns(UsageBar(usage / 100, color), QuietText(Describe.CpuUsage(usage))!).Collapse());
         }
 
         return new Rows(lines);
@@ -472,44 +407,19 @@ internal static class SystemOverviewView
             return (Strings.Unknown, null);
         }
 
-        var text = string.Format(
-            CultureInfo.CurrentCulture,
-            Strings.MemoryUsage,
-            Formatting.Bytes(memory.UsedBytes),
-            Formatting.Bytes(memory.TotalBytes),
-            Formatting.Percent(memory.UsedFraction));
-
         var color = memory.UsedFraction >= SystemOverviewAnalyzer.MemoryNearlyFullFraction ? Color.Yellow : Color.Green;
         var lines = new List<IRenderable> { UsageBar(memory.UsedFraction, color) };
 
         if (layout is { Modules.Count: > 0 })
         {
-            lines.Add(QuietText(ModulesText(layout.Modules))!);
-            lines.Add(QuietText(string.Format(CultureInfo.CurrentCulture, Strings.MemorySlots, layout.Modules.Count, layout.SlotCount))!);
+            lines.Add(QuietText(Describe.Modules(layout.Modules))!);
+            lines.Add(QuietText(Describe.Slots(layout))!);
         }
 
-        return (text, new Rows(lines));
+        return (Describe.MemoryUsage(memory), new Rows(lines));
     }
 
-    /// <summary>"2 modules: 8 GB + 16 GB · DDR4 · 2667 MT/s".</summary>
-    private static string ModulesText(IReadOnlyList<MemoryModuleInfo> modules)
-    {
-        var sizes = string.Join(" + ", modules.Select(m => Formatting.Bytes(m.SizeBytes)));
-        var count = modules.Count == 1
-            ? string.Format(CultureInfo.CurrentCulture, Strings.MemoryModulesOne, sizes)
-            : string.Format(CultureInfo.CurrentCulture, Strings.MemoryModulesMany, modules.Count, sizes);
-        var types = string.Join("/", modules.Select(m => m.Type).OfType<string>().Distinct());
-        // All modules run at the speed of the slowest one.
-        var speed = modules.Select(m => m.SpeedMts).OfType<int>().DefaultIfEmpty().Min() is var s and > 0
-            ? string.Create(CultureInfo.CurrentCulture, $"{s} MT/s")
-            : null;
-        return JoinDots(count, types.Length == 0 ? null : types, speed);
-    }
-
-    private static string JoinDots(params string?[] parts) =>
-        string.Join(" · ", parts.Where(p => !string.IsNullOrEmpty(p)));
-
-    /// <summary>One main line per GPU with a quiet detail line below it.</summary>
+    /// <summary>One main line per GPU with quiet detail lines below it.</summary>
     private static IRenderable GpuLines(IReadOnlyList<GpuInfo>? gpus)
     {
         if (gpus is null || gpus.Count == 0)
@@ -520,38 +430,14 @@ internal static class SystemOverviewView
         var lines = new List<IRenderable>();
         foreach (var gpu in gpus)
         {
-            var detail = gpu switch
-            {
-                { IsIntegrated: true, SharedMemoryBytes: { } shared } =>
-                    string.Format(CultureInfo.CurrentCulture, Strings.GpuIntegratedUpTo, Formatting.Bytes(shared)),
-                { IsIntegrated: true } => Strings.GpuIntegrated,
-                _ => string.Format(CultureInfo.CurrentCulture, Strings.GpuMemory, Formatting.Bytes(gpu.DedicatedMemoryBytes!.Value)),
-            };
             lines.Add(Text(gpu.Name));
-            lines.Add(QuietText(detail)!);
-
-            if (gpu.DriverVersion is { } version)
+            lines.Add(QuietText(Describe.GpuKind(gpu))!);
+            if (QuietText(Describe.GpuDriver(gpu)) is { } driver)
             {
-                lines.Add(QuietText(gpu.DriverDate is { } date
-                    ? string.Format(CultureInfo.CurrentCulture, Strings.GpuDriver, version, date.ToString("d", CultureInfo.CurrentCulture))
-                    : string.Format(CultureInfo.CurrentCulture, Strings.GpuDriverVersionOnly, version))!);
+                lines.Add(driver);
             }
         }
 
         return new Rows(lines);
-    }
-
-    /// <summary>E.g. "NVMe SSD · Samsung SSD 980 PRO 1TB".</summary>
-    private static string? DeviceText(VolumeInfo drive)
-    {
-        var kind = drive.Kind switch
-        {
-            DriveKind.Ssd => "SSD",
-            DriveKind.Hdd => Strings.DriveHdd,
-            _ => null,
-        };
-        var type = string.Join(' ', new[] { drive.BusType, kind }.Where(p => p is not null));
-        var parts = new[] { type, drive.Model }.Where(p => !string.IsNullOrEmpty(p)).ToArray();
-        return parts.Length == 0 ? null : string.Join(" · ", parts);
     }
 }

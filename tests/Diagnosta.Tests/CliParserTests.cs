@@ -31,6 +31,14 @@ public class CliParserTests
     }
 
     [Theory]
+    [InlineData("-r")]
+    [InlineData("--report")]
+    public void ReportFlag_RequestsAReport(string flag)
+    {
+        Assert.True(CliParser.Parse([flag]).Options?.Report);
+    }
+
+    [Theory]
     [InlineData("-f")]
     [InlineData("--full")]
     public void FullFlag_RequestsTheFullCheckWithoutMenu(string flag)
