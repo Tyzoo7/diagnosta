@@ -9,8 +9,7 @@ Diagnosta ist ein Diagnose-Tool für Windows, das im Terminal läuft. Es zeigt d
 eines PCs an einem Ort und erklärt die Ergebnisse in verständlicher Sprache, sodass
 auch Menschen ohne Technikwissen sie verstehen.
 
-> **Status: frühe Entwicklung (v0.6).** Menü, Systemdetails, Laufwerke, Akku, Netzwerk, Autostart und laufende Programme sind fertig.
-> Weitere Prüfungen kommen Schritt für Schritt dazu.
+> **Status: Vorabversion auf dem Weg zu 1.0.** Alles unter [Funktionen](#funktionen) funktioniert heute schon.
 
 ## Warum noch ein Diagnose-Tool?
 
@@ -24,20 +23,23 @@ Genau dafür ist Diagnosta gebaut:
 - **Ein Bericht zum Weitergeben.** Ein Klick erstellt eine HTML-Datei, die du an ein Support-Ticket anhängen kannst.
 - **Deutsch und Englisch.** Das Tool nutzt automatisch deine Windows-Sprache.
 
-## Geplant für v1.0
+## Funktionen
 
-- [x] Menü mit Pfeiltasten und Sprachwahl (Deutsch/Englisch)
-- [x] Systemüberblick: Windows-Version, Laufzeit und ausstehender Neustart; CPU-Auslastung und Grundtakt; RAM-Belegung und -Module; Grafikspeicher und -treiber, mit verständlichen Hinweisen
-- [x] Laufwerksübersicht: SSD/HDD, Modell, freier Platz, Warnung wenn fast voll
-- [x] Laufwerkszustand: gesund / Warnung / defekt, wie von Windows gemeldet (ohne Admin-Rechte)
-- [ ] Speicheranalyse: größte Ordner und Dateien
-- [ ] Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
-- [x] Akku-Verschleiß bei Laptops
-- [x] Netzwerkadapter: Geschwindigkeit, IP-Adresse, Router, DNS (ohne Internetzugriff, ohne Standortabfrage)
-- [x] Autostart-Programme wie im Task-Manager
-- [x] Laufende Programme mit dem meisten RAM- und CPU-Verbrauch
-- [ ] Absturz-Verlauf: Bluescreens und unerwartete Neustarts
-- [x] Support-Bericht: eine HTML-Datei zum Anhängen an ein Ticket, standardmäßig anonymisiert
+- Menü mit Pfeiltasten und Sprachwahl (Deutsch/Englisch)
+- Systemüberblick: Windows-Version, Laufzeit und ausstehender Neustart; CPU-Auslastung und Grundtakt; RAM-Belegung und -Module; Grafikspeicher und -treiber, mit verständlichen Hinweisen
+- Laufwerksübersicht: SSD/HDD, Modell, freier Platz, Warnung wenn fast voll
+- Laufwerkszustand: gesund / Warnung / defekt, wie von Windows gemeldet (ohne Admin-Rechte)
+- Akku-Verschleiß bei Laptops
+- Netzwerkadapter: Geschwindigkeit, IP-Adresse, Router, DNS (ohne Internetzugriff, ohne Standortabfrage)
+- Autostart-Programme wie im Task-Manager
+- Laufende Programme mit dem meisten RAM- und CPU-Verbrauch
+- Support-Bericht: eine HTML-Datei zum Anhängen an ein Ticket, standardmäßig anonymisiert
+
+### Geplant nach 1.0
+
+- Speicheranalyse: größte Ordner und Dateien
+- Aufräum-Vorschläge: Temp-Dateien, Update-Cache, Papierkorb
+- Absturz-Verlauf: Bluescreens und unerwartete Neustarts
 
 ## Support-Bericht
 
@@ -52,9 +54,9 @@ danach alle Details.
 
 ## Grundsätze
 
-- **Standardmäßig nur lesen.** Gelöscht wird nichts ohne ausdrückliche Bestätigung, und gelöschte Dateien landen im Papierkorb.
+- **Nur lesen.** Diagnosta liest nur. Künftige Aufräum-Funktionen löschen nichts ohne ausdrückliche Bestätigung, und nur in den Papierkorb.
 - **Kein Netzwerkzugriff, keine Telemetrie.** Diagnosta sendet nie Daten irgendwohin.
-- **Admin-Rechte nur, wenn nötig.** Wenn sie nötig sind, erklärt das Tool, warum.
+- **Keine Admin-Rechte.** Alles funktioniert als normaler Benutzer. Falls eine künftige Prüfung sie je braucht, erklärt das Tool, warum.
 - **Wenige Abhängigkeiten, feste Versionen.** So bleibt die Angriffsfläche klein.
 
 ## Was es heute zeigt

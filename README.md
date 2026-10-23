@@ -9,8 +9,7 @@ Diagnosta is a Windows diagnostics tool for the terminal. It shows the health of
 in one place and explains the results in plain language, so people with no technical
 background can understand them too.
 
-> **Status: early development (v0.6).** Menu, system details, drives, battery, network, startup apps and running programs are in place.
-> More checks are being added one by one.
+> **Status: pre-release, heading for 1.0.** Everything listed under [Features](#features) works today.
 
 ## Why another diagnostics tool?
 
@@ -23,20 +22,23 @@ of everything** and a way to **pass it on**. Diagnosta is built for that:
 - **A report to share.** One click creates an HTML file you can attach to a support ticket.
 - **German and English.** The tool uses your Windows language automatically.
 
-## Planned for v1.0
+## Features
 
-- [x] Arrow-key menu with language choice (German/English)
-- [x] System overview: Windows version, uptime and pending restart; CPU load and base clock; RAM usage and modules; GPU memory and driver, with plain-language hints
-- [x] Drive overview: SSD/HDD, model, free space, warning when nearly full
-- [x] Drive health: healthy / warning / failing, as reported by Windows (no admin rights needed)
-- [ ] Storage analysis: largest folders and files
-- [ ] Cleanup suggestions: temp files, update cache, recycle bin
-- [x] Battery wear on laptops
-- [x] Network adapters: link speed, IP address, router, DNS (no internet access, no location prompt)
-- [x] Startup programs, as listed in Task Manager
-- [x] Running programs using the most memory and CPU
-- [ ] Crash history: blue screens and unexpected shutdowns
-- [x] Support report: one HTML file to attach to a ticket, anonymised by default
+- Arrow-key menu with language choice (German/English)
+- System overview: Windows version, uptime and pending restart; CPU load and base clock; RAM usage and modules; GPU memory and driver, with plain-language hints
+- Drive overview: SSD/HDD, model, free space, warning when nearly full
+- Drive health: healthy / warning / failing, as reported by Windows (no admin rights needed)
+- Battery wear on laptops
+- Network adapters: link speed, IP address, router, DNS (no internet access, no location prompt)
+- Startup programs, as listed in Task Manager
+- Running programs using the most memory and CPU
+- Support report: one HTML file to attach to a ticket, anonymised by default
+
+### Planned after 1.0
+
+- Storage analysis: largest folders and files
+- Cleanup suggestions: temp files, update cache, recycle bin
+- Crash history: blue screens and unexpected shutdowns
 
 ## Support report
 
@@ -50,9 +52,9 @@ desktop, ready to attach to a ticket or e-mail. Findings come first, then every 
 
 ## Principles
 
-- **Read-only by default.** Nothing is deleted without explicit confirmation, and deleted files go to the recycle bin.
+- **Read-only.** Diagnosta only reads. Future cleanup features will delete nothing without explicit confirmation, and only into the recycle bin.
 - **No network access, no telemetry.** Diagnosta never sends data anywhere.
-- **Admin rights only when needed.** When they are needed, the tool explains why.
+- **No admin rights.** Everything works as a normal user. If a future check ever needs them, the tool will explain why.
 - **Few dependencies, pinned versions.** This keeps the attack surface small.
 
 ## What it shows today
